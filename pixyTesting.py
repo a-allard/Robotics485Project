@@ -54,13 +54,10 @@ def processImage(b, c):
     return np.array(data, dtype=np.uint8)
 
 pixy.pixy_run()
-time.sleep(2)
 def captureImages(numImages):
     images = []
     b = pixy.responceBlock(1)
     for i in range(numImages):
-        time.sleep(0.01)
-        # pixy.pixy_stop()
         a = pixy.pixy_getImage(b, 0x21, 0, 0, 320, 200)
         c = [pixy.getChar(a, i) for i in range(b[0].numPixels)]
         c = np.array(c)
