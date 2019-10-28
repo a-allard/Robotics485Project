@@ -12,6 +12,7 @@ import numpy as np
 import cv2
 import time
 from imutils.object_detection import non_max_suppression
+import imutils
 
 
 
@@ -65,24 +66,31 @@ class pixyCamera(object):
         for i in range(numImages):
             rawImagePointer = pixy.pixy_getImage(b, 0x21, 0, 0, 320, 200)
             pythonImageArray = np.array([pixy.getChar(rawImagePointer, i) for i in range(b[0].numPixels)])
-            images.append(self.processImage(b, pythonImageArray))
+            images.append(self.__processImage__(b, pythonImageArray))
         return np.array(images, np.uint8)
 
-    def findPeople(self, imageArray, drawOnImage=False):
-        (rects, widths) = self._hog.detectMultiScale(imageArray, winStride=(4,4),
-                                                     padding=(8,8), scale=1)
+    def findPeople(self, imageArray, drawOnImage=False, useOverLap=True):
+        imageArray = imutils.resize(imageArray, width=min(400, imageArray.shape[1]))
+        (rects, widths) = self._hog.detectMultiScale(imageArray, winStride=(2, 2),
+                                                     padding=(4, 4), scale=1.05)
         rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
-        pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
+        if useOverLap:
+            pick = non_max_suppression(rects, probs=None, overlapThresh=0.5)
+        else:
+            pick = rects
         if drawOnImage:
             for (xA, yA, xB, yB) in pick:
                 cv2.rectangle(imageArray, (xA, yA), (xB, yB), (0, 255, 0), 2)
-        return pick
+            return (rects, pick, imageArray)
+        return (rects, pick)
 
 
 
 pixyCam = pixyCamera()
 
-img = pixyCam.captureImages(1)[0, :, :, :]
-rects = pixyCam.findPeople(img, True)
-cv2.imshow('Testing', img)
+while 1:
+    img = pixyCam.captureImages(1)[0, :, :, :]
+    rects, picks, personPick = pixyCam.findPeople(img, True)
+    cv2.imshow('Testing', personPick)
+    cv2.waitKey(10)
 cv2.waitKey(0)
