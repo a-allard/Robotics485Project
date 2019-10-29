@@ -68,9 +68,10 @@ def captureImages(numImages):
     return np.array(images, np.uint8)
 
 
-myImage = captureImages(25)
+myImage = captureImages(1)
 
 index = 0
 for im in myImage:
     cv2.imshow('pixyImage_{0}'.format(index), im)
     index += 1
+cv2.waitKey(0)
