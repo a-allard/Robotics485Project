@@ -75,8 +75,8 @@ class pixyCamera(object):
         return np.array(images, np.uint8)
 
     def findPeople(self, imageArray, drawOnImage=False, useOverLap=True):
-        imageArray = imutils.resize(imageArray, width=min(300, imageArray.shape[1]))
-        (rects, widths) = self._hog.detectMultiScale(imageArray, winStride=(3, 3),
+        imageArray = imutils.resize(imageArray, width=min(200, imageArray.shape[1]))
+        (rects, widths) = self._hog.detectMultiScale(imageArray, winStride=(2, 2),
                                                      padding=(4, 4), scale=1.05)
         rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
         if useOverLap:
@@ -101,7 +101,7 @@ with PiCamera() as cam:
     time.sleep(3)
     totalDF = pd.DataFrame()
 
-    for i in range(1000):
+    for i in range(10000):
         #time.sleep(0.01)
         t = time.time()
         img.close()
