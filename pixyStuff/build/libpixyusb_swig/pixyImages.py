@@ -8,13 +8,16 @@ Created on Fri Oct 25 06:47:30 2019
 
 
 import pixy
+import io
 import numpy as np
 import psutil
 import cv2
+from PIL import Image
 import time
 from imutils.object_detection import non_max_suppression
 import imutils
 import pandas as pd
+from picamera import PiCamera
 
 
 
@@ -72,8 +75,8 @@ class pixyCamera(object):
         return np.array(images, np.uint8)
 
     def findPeople(self, imageArray, drawOnImage=False, useOverLap=True):
-        imageArray = imutils.resize(imageArray, width=min(200, imageArray.shape[1]))
-        (rects, widths) = self._hog.detectMultiScale(imageArray, winStride=(2, 2),
+        imageArray = imutils.resize(imageArray, width=min(300, imageArray.shape[1]))
+        (rects, widths) = self._hog.detectMultiScale(imageArray, winStride=(3, 3),
                                                      padding=(4, 4), scale=1.05)
         rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
         if useOverLap:
@@ -89,20 +92,32 @@ class pixyCamera(object):
 
 
 pixyCam = pixyCamera()
-
 totalDF = pd.DataFrame()
+img = io.BytesIO()
+with PiCamera() as cam:
+    
+    cam.resolution=(320, 200)
+    #cam.start_preview()
+    time.sleep(3)
+    totalDF = pd.DataFrame()
 
-for i in range(10000):
-    #time.sleep(0.01)
-    t = time.time()
-    img = pixyCam.captureImages(1)[0, :, :, :]
-    t3=time.time()
-    preRecTemp = psutil.sensors_temperatures()['cpu-thermal'][0].current
-    rects, picks, personPick = pixyCam.findPeople(img, True)
-    t2=time.time()
-    print('Image #{0} cpuTemp: {3}C\nTime: {2:.4f} People: {1}\n'.format(i, len(picks), t2-t, psutil.sensors_temperatures()['cpu-thermal'][0].current))
-    dfRow = {'Image#':i,'cpuTemp':psutil.sensors_temperatures()['cpu-thermal'][0].current,'Time':t2-t,'PeopleDetected':len(picks), 'cpuFreq':psutil.cpu_freq().current, 'imageCapTime':t3-t,'imageParseTime':t3-t2, 'PreRecTemp':preRecTemp}
-    totalDF = totalDF.append(dfRow, ignore_index=True)
-    #cv2.imshow('Testing', personPick)
-    #cv2.waitKey(10)
+    for i in range(1000):
+        #time.sleep(0.01)
+        t = time.time()
+        img.close()
+        img = io.BytesIO()
+        
+        #img = pixyCam.captureImages(1)[0, :, :, :]
+        cam.capture(img, 'jpeg')
+        imgs = np.array(Image.open(img))
+        t3=time.time()
+        preRecTemp = psutil.sensors_temperatures()['cpu-thermal'][0].current
+        rects, picks, personPick = pixyCam.findPeople(imgs, True)
+        t2=time.time()
+        print('Image #{0} cpuTemp: {3}C\nTime: {2:.4f} People: {1}\n'.format(i, len(picks), t2-t, psutil.sensors_temperatures()['cpu-thermal'][0].current))
+        dfRow = {'Image#':i,'cpuTemp':psutil.sensors_temperatures()['cpu-thermal'][0].current,'Time':t2-t,'PeopleDetected':len(picks), 'cpuFreq':psutil.cpu_freq().current, 'imageCapTime':t3-t,'imageParseTime':t3-t2, 'PreRecTemp':preRecTemp}
+        totalDF = totalDF.append(dfRow, ignore_index=True)
+ #       cv2.imshow('Testing', personPick)
+#        cv2.waitKey(1000)
+  #      time.sleep(1.5)
 #cv2.waitKey(0)
