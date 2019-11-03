@@ -96,26 +96,27 @@ totalDF = pd.DataFrame()
 #img = io.BytesIO()
 
 cam = PiCamera()
-cam.resolution=(224, 320)
+cam.resolution=(400, 640)
 #cam.start_preview()
 cam.color_effects=(128,128)
 time.sleep(3)
-img = PiRGBArray(cam, size=cam.resolution)
+img = PiRGBArray(cam)
 time.sleep(1)
 totalDF = pd.DataFrame()
-
-for i in range(1000):
+i=-1
+for frame in cam.capture_continuous(img, format='bgr', use_video_port=True):
+    i+=1
     t = time.time()
-#       img.close()
-#      img = io.BytesIO()
-    cam.capture(img, format='bgr')
     t3=time.time()
     preRecTemp = psutil.sensors_temperatures()['cpu-thermal'][0].current
-    rects, picks, personPick = pixyCam.findPeople(img.array, True, maxScale=200)
+    rects, picks, personPick = pixyCam.findPeople(frame.array, True, maxScale=250)
+    img.truncate(0)
     t2=time.time()
     print('Image #{0} cpuTemp: {3}C\nTime: {2:.4f} People: {1}\n'.format(i, len(picks), t2-t, psutil.sensors_temperatures()['cpu-thermal'][0].current))
     dfRow = {'Image#':i,'cpuTemp':psutil.sensors_temperatures()['cpu-thermal'][0].current,'Time':t2-t,'PeopleDetected':len(picks), 'cpuFreq':psutil.cpu_freq().current, 'imageCapTime':t3-t,'imageParseTime':t3-t2, 'PreRecTemp':preRecTemp}
     totalDF = totalDF.append(dfRow, ignore_index=True)
     cv2.imshow('Testing', personPick)
     cv2.waitKey(10)
+    if(i>10000):
+        break
 #cv2.waitKey(0)
