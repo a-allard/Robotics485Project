@@ -103,6 +103,7 @@ time.sleep(3)
 img = PiRGBArray(cam)
 time.sleep(1)
 totalDF = pd.DataFrame()
+peopleDF = pd.DataFrame()
 i=-1
 for frame in cam.capture_continuous(img, format='bgr', use_video_port=True):
     i+=1
@@ -112,6 +113,7 @@ for frame in cam.capture_continuous(img, format='bgr', use_video_port=True):
     rects, picks, personPick = pixyCam.findPeople(frame.array, True, maxScale=250)
     img.truncate(0)
     t2=time.time()
+    #peopleDF = peopleDF.append(*rects)
     print('Image #{0} cpuTemp: {3}C\nTime: {2:.4f} People: {1}\n'.format(i, len(picks), t2-t, psutil.sensors_temperatures()['cpu-thermal'][0].current))
     dfRow = {'Image#':i,'cpuTemp':psutil.sensors_temperatures()['cpu-thermal'][0].current,'Time':t2-t,'PeopleDetected':len(picks), 'cpuFreq':psutil.cpu_freq().current, 'imageCapTime':t3-t,'imageParseTime':t3-t2, 'PreRecTemp':preRecTemp}
     totalDF = totalDF.append(dfRow, ignore_index=True)
