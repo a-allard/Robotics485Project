@@ -25,7 +25,7 @@ from random import randint
 class RExEye(object):
     def __init__(self):
         self._defaultRes = (400, 640)
-        self,_favoritePersonLocation = None
+        self._favoritePersonLocation = None
         self._eyeCam = PiCamera()
         self._eyeCam.resolution = self._defaultRes
         self._eyeCam.color_effects = (128, 128)
@@ -36,11 +36,12 @@ class RExEye(object):
 
 
     def __captureImage__(self):
+        self._camImage.truncate(0)
         self._eyeCam.capture(self._camImage, format='bgr', use_video_port=True)
         return self._camImage.array.copy()
 
     def findPeople(self, imageArray=None, drawOnImage=False, useOverLap=True, parseWidth=125):
-        if not imageArray:
+        if imageArray is None:
             imageArray = self.__captureImage__()
         imageArray = imutils.resize(imageArray, width=min(parseWidth, imageArray.shape[1]))
         (rects, widths) = self._hog.detectMultiScale(imageArray, winStride=(4, 4),
@@ -67,3 +68,11 @@ class RExEye(object):
 
     def angleChange(self):
         pass
+
+if __name__ == '__main__':
+    cam = RExEye()
+    while 1:
+        img = cam.__captureImage__()
+        newImg = cam.findPeople(img, True, False, 400)
+        cv2.imshow('testing', newImg[2])
+        cv2.waitKey(100)
