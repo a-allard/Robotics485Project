@@ -10,6 +10,7 @@ from serial import Serial
 from serial.tools.list_ports import comports
 import numpy as np
 
+
 class teensy(Serial):
     _error = None
     _TEENSY_DESCRIPTION = ''
