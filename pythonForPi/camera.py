@@ -24,7 +24,7 @@ from random import randint
 
 class RExEye(object):
     def __init__(self):
-        self._defaultRes = (400, 640)
+        self._defaultRes = (800, 1280)
         self._favoritePersonLocation = None
         self._eyeCam = PiCamera()
         self._eyeCam.resolution = self._defaultRes
@@ -44,8 +44,8 @@ class RExEye(object):
         if imageArray is None:
             imageArray = self.__captureImage__()
         imageArray = imutils.resize(imageArray, width=min(parseWidth, imageArray.shape[1]))
-        (rects, widths) = self._hog.detectMultiScale(imageArray, winStride=(4, 4),
-                                                     padding=(8, 8), scale=1.09)
+        (rects, widths) = self._hog.detectMultiScale(imageArray, winStride=(12, 12),
+                                                     padding=(15, 15), scale=1.09)
         rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
         if useOverLap:
             pick = non_max_suppression(rects, probs=None, overlapThresh=0.5)
@@ -71,8 +71,14 @@ class RExEye(object):
 
 if __name__ == '__main__':
     cam = RExEye()
+    imgCounter = 0
+    peopleDF = pd.DataFrame()
     while 1:
         img = cam.__captureImage__()
-        newImg = cam.findPeople(img, True, False, 400)
+        newImg = cam.findPeople(img, True, False, 250)
+        if newImg[0].size > 0:
+            for row in newImg[0]:
+                peopleDF = peopleDF.append(pd.DataFrame([[imgCounter, row[0], row[1], row[2], row[3]]]), ignore_index=True)
+            imgCounter += 1
         cv2.imshow('testing', newImg[2])
-        cv2.waitKey(100)
+        cv2.waitKey(10)
