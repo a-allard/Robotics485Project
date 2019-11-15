@@ -42,7 +42,6 @@ void serialEvent(){
     case '\n':
       if(fullOutput){
         //Serial.println(inputString);
-        
       }
       parseCMD();
       break;
@@ -84,7 +83,7 @@ String formVelThePhi(){
 }
 
 String formFullCMD(){
-  return String("");
+  return String(controllerMode) + "," + String(vel) + "," + String(theta) +  "," + String(phi);
 }
 
 void updateVals()
