@@ -1,24 +1,50 @@
 #include <Arduino.h>
 #include <Servo.h>
 
-Servo s1, s2, s3;
+
+#define velMax 100
+#define velMin 0
+#define thetaMax 2*3.141596
+#define thetaMin 0
+#define phiMax 2*3.141596
+#define phiMin 0
+
+const int velServoPin=0, thetaServoPin=1, phiServoPin=2, controllerModeServoPin=3;
+bool fullOutput = false;
+
+Servo velServoSig, thetaServoSig, phiServoSig, controllerModeServoSig;
 String inputString = "";
+double vel = 0, theta = 0, phi = 0;
+int controllerMode = 0;
+
+
 
 void setup() {
   Serial.begin(115200);
-  s1.read();
+  pinMode(velServoPin, INPUT);
+  pinMode(thetaServoPin, INPUT);
+  pinMode(phiServoPin, INPUT);
+  pinMode(controllerModeServoPin, INPUT);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  
 }
 
 void serialEvent(){
   while(Serial.available()){
     char c = (char)Serial.read();
+    if(fullOutput){
+      Serial.print(c);
+    }
     switch (c)
     {
     case '\n':
+      if(fullOutput){
+        //Serial.println(inputString);
+        
+      }
+      parseCMD();
       break;
     
     default:
@@ -30,14 +56,46 @@ void serialEvent(){
 }
 
 void parseCMD(){
-  inputString = "";
+  if(inputString.length() < 3){
+    Serial.println("ERROR: Invalid input string");
+    return;
+  }
   String cmd = String(inputString[0] + inputString[1] + inputString[2]);
   cmd = cmd.toLowerCase();
-  if(cmd == String("vpt")){
-    sendVelThePhi();
+  String outputString = "";
+  if(fullOutput){
+    outputString += cmd + String(" = ");
   }
+  if(cmd == String("vpt")){
+    outputString += formVelThePhi();
+  }
+  if(cmd == String("bcm")){
+    outputString += String(controllerMode);
+  }
+  if(cmd == String("fcs")){
+    outputString += formFullCMD();
+  }
+  Serial.println(outputString);
+  inputString = "";
 }
 
-void sendVelThePhi(){
-  Serial.print("vtp");
+String formVelThePhi(){
+  return String(vel) + "," + String(theta) +  "," + String(phi);
+}
+
+String formFullCMD(){
+  return String("");
+}
+
+void updateVals()
+{
+  vel = mapD(velServoSig.read(), MIN_PULSE_WIDTH, MAX_PULSE_WIDTH, velMin, velMax);
+  theta = mapD(thetaServoSig.read(), MIN_PULSE_WIDTH, MAX_PULSE_WIDTH, thetaMin, thetaMax);
+  phi = mapD(phiServoSig.read(), MIN_PULSE_WIDTH, MAX_PULSE_WIDTH, phiMin, phiMax);
+  controllerMode = (int)round(mapD(controllerModeServoSig.read(), MIN_PULSE_WIDTH, MAX_PULSE_WIDTH, 0, 2));
+}
+
+double mapD(double val, double fromA, double fromB, double toA, double toB)
+{
+  return (val - fromA) * toB / fromA + toA;
 }
