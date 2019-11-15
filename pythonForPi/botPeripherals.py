@@ -33,6 +33,9 @@ class teensy(Serial):
         self.write(strout.encode())
         time.sleep(0.01)
         return self.read_all().decode()
+    def __del__(self):
+        self.close()
+        super(Serial, self).__del__()
 
 class motorControl(teensy):
     def __init__(self):
@@ -100,15 +103,33 @@ class motorControl(teensy):
             self._error = returned
             return int(returned[0])
 
+    def __del__(self):
+        super(teensy, self).__del__()
+
 
 
 class remoteControl(teensy):
     def __init__(self):
         super(teensy, self).__init__('TEENSY40', True)
-
+        self.write('fco 0'.encode())
     def getRemoteCommand(self):
 
 
-        # VEL,THETA,PHI
+        # CONTROLMODE,VEL,THETA,PHI
         # all values are relative to the forward direction of REx
-        move = self.query('cmd').split(',')
+        motionControllerMode= self.query('fcs').split(',')
+        return (float(motionControllerMode[0]),
+                float(motionControllerMode[1]),
+                float(motionControllerMode[2]),
+                float(motionControllerMode[4]))
+    def getControllerMode(self):
+        return int(self.query('bcm'))
+    def getRemoteVectors(self):
+        controlVector = self.query('vpt').split(',')
+        return (float(controlVector[0]),
+                float(controlVector[1]),
+                float(controlVector[2]))
+
+    def __del__(self):
+        self.write('fco 1'.encode())
+        super(teensy, self).__del__()
