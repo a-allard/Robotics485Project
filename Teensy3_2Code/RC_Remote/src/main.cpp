@@ -15,12 +15,14 @@ void loop() {
 
 void serialEvent(){
   while(Serial.available()){
-    char c = Serial.read();
-    if(c != '\n'){
-      inputString += String(c);
-    }
-    else
+    char c = (char)Serial.read();
+    switch (c)
     {
+    case '\n':
+      break;
+    
+    default:
+      inputString += String(c);
       break;
     }
     
@@ -28,6 +30,14 @@ void serialEvent(){
 }
 
 void parseCMD(){
-
   inputString = "";
+  String cmd = String(inputString[0] + inputString[1] + inputString[2]);
+  cmd = cmd.toLowerCase();
+  if(cmd == String("vpt")){
+    sendVelThePhi();
+  }
+}
+
+void sendVelThePhi(){
+  Serial.print("vtp");
 }
