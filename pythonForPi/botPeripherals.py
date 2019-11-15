@@ -9,13 +9,18 @@ Created on Tue Oct 29 11:27:13 2019
 from serial import Serial
 from serial.tools.list_ports import comports
 import numpy as np
+import time
+
 
 class teensy(Serial):
     _error = None
     _TEENSY_DESCRIPTION = ''
-    def __init__(self):
+    def __init__(self, teensyDes='', openPort=True):
+        self._TEENSY_DESCRIPTION = teensyDes
+        if openPort:
+            self.openPort()
+    def openPort(self):
         ports = comports()
-
         super(Serial, self).__init__(self.__findTeensy__(ports), 115200)
         self.timeout = 0.01
     def __findTeensy__(self, ports):
@@ -24,6 +29,14 @@ class teensy(Serial):
             return port
         else:
             return port[0]
+    def query(self, strout):
+        self.write(strout.encode())
+        time.sleep(0.01)
+        return self.read_all().decode()
+
+class motorControl(teensy):
+    def __init__(self):
+        super(teensy, self).__init__('TEENSY32', True)
     def sendMoveCommand(self, velMag, velDirection, rotation):
         """
         Sends a command to the Teensy to change the robots position.
@@ -66,7 +79,36 @@ class teensy(Serial):
             return int(returned[0])
         return np.vectorize(int)(returned.split(' ')[1].split(','))
 
+    def enterLineFollow(self):
+        self.write('lfm 1'.encode())
+        returned = self.read_all().decode()
+        if 'err' in returned:
+            self._error = returned
+            return int(returned[0])
 
-class remoteControl(object):
+    def exitLineFollow(self):
+        self.write('lfm 0'.encode())
+        returned = self.read_all().decode()
+        if 'err' in returned:
+            self._error = returned
+            return int(returned[0])
+
+    def stop(self):
+        self.write('stp'.encode())
+        returned = self.read_all().decode()
+        if 'err' in returned:
+            self._error = returned
+            return int(returned[0])
+
+
+
+class remoteControl(teensy):
     def __init__(self):
-        self.thisIsBad=True
+        super(teensy, self).__init__('TEENSY40', True)
+
+    def getRemoteCommand(self):
+
+
+        # VEL,THETA,PHI
+        # all values are relative to the forward direction of REx
+        move = self.query('cmd').split(',')
