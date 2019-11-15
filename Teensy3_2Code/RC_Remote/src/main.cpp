@@ -17,7 +17,7 @@ String inputString = "";
 double vel = 0, theta = 0, phi = 0;
 int controllerMode = 0;
 
-
+IntervalTimer updateVarTimer;
 
 void setup() {
   Serial.begin(115200);
@@ -25,10 +25,15 @@ void setup() {
   pinMode(thetaServoPin, INPUT);
   pinMode(phiServoPin, INPUT);
   pinMode(controllerModeServoPin, INPUT);
+  velServoSig.attach(velServoPin);
+  thetaServoSig.attach(thetaServoPin);
+  phiServoSig.attach(phiServoPin);
+  controllerModeServoSig.attach(controllerModeServoPin);
+  updateVarTimer.begin(updateVals, 1000);
 }
 
 void loop() {
-  
+  //It all about the interrupts babe!!!
 }
 
 void serialEvent(){
@@ -59,8 +64,10 @@ void parseCMD(){
     Serial.println("ERROR: Invalid input string");
     return;
   }
+  inputString.trim();
+  inputString.replace(" ", "");
+  inputString.toLowerCase();
   String cmd = String(inputString[0] + inputString[1] + inputString[2]);
-  cmd = cmd.toLowerCase();
   String outputString = "";
   if(fullOutput){
     outputString += cmd + String(" = ");
@@ -73,6 +80,12 @@ void parseCMD(){
   }
   if(cmd == String("fcs")){
     outputString += formFullCMD();
+  }
+  if(cmd == String("fco")){
+    if(inputString.indexOf("=") > 0){
+      fullOutput = (bool)String(inputString[inputString[inputString.indexOf("=") + 1]]).toInt();
+      
+    }
   }
   Serial.println(outputString);
   inputString = "";
