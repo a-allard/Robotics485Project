@@ -69,8 +69,14 @@ class RExEye(object):
         self.favoritePersonLocation = peopleArray[diffs.sum(1).argmin(), :]
         return True
 
-    def angleChange(self):
-        pass
+    def findFavoritePersonLocation(self, peopleArray):
+        if not self.findFavoritePerson(peopleArray):
+            return None
+        centerX = (self.favoritePersonLocation[0] - self.favoritePersonLocation[2]) / 2
+        centerY = (self.favoritePersonLocation[1] - self.favoritePersonLocation[3]) / 2
+
+
+
 
 if __name__ == '__main__':
     cam = RExEye()
