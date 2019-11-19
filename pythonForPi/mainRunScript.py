@@ -18,6 +18,10 @@ def main():
     motorControl.enterLineFollow()
     while motorControl.queryLineStatus() == 1:
         time.sleep(1)
+    unFilteredPeople, filteredPeople = cam.findPeople()
+    cam.findFavoritePerson(filteredPeople)
+
+
 
 
 
