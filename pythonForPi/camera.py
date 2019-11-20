@@ -72,8 +72,15 @@ class RExEye(object):
     def findFavoritePersonLocation(self, peopleArray):
         if not self.findFavoritePerson(peopleArray):
             return None
-        centerX = (self.favoritePersonLocation[0] - self.favoritePersonLocation[2]) / 2
-        centerY = (self.favoritePersonLocation[1] - self.favoritePersonLocation[3]) / 2
+        centerX = (self.favoritePersonLocation[0] - self.favoritePersonLocation[2]) / 2 + self.favoritePersonLocation[0]
+        centerY = (self.favoritePersonLocation[1] - self.favoritePersonLocation[3]) / 2 + self.favoritePersonLocation[1]
+        centerX = centerX / self._camImage.shape[0] - 0.5
+        centerY = centerY / self._camImage.shape[1] - 0.5
+        return(centerX, centerY)
+
+
+
+
 
 
 
