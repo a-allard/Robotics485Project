@@ -42,6 +42,7 @@ class teensy(Serial):
 class motorControl(teensy):
     def __init__(self):
         super(teensy, self).__init__('TEENSY40', True)
+        self.write('fco 0'.encode())
     def sendMoveCommand(self, velMag, velDirection, rotation):
         """
         Sends a command to the Teensy to change the robots position.
