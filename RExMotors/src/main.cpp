@@ -100,17 +100,35 @@ void parseCMD(){
       outputString += returnVelData();
     }
     else{
-
+      parseVelCommand(inputString.substring(3));
     }
     
     outputString += "";
   }
+  if(cmd == String("lfm")){
+    if(inputString.indexOf("=") > 0){
+      followLineMode = (bool)String(inputString[inputString[inputString.indexOf("=") + 1]]).toInt();
+    }
+    else{
+      outputString += String(followLineMode);
+    }
+  }
+  if(cmd == String("lfs")){
+    outputString += String(followLineMode);
+  }
+  if(cmd == String("stp")){
+    stopMotors();
+    outputString += "Done";
+  }
   if(cmd == String("fco")){
     if(inputString.indexOf("=") > 0){
       fullOutput = (bool)String(inputString[inputString[inputString.indexOf("=") + 1]]).toInt();
-      
+    }
+    else{
+      outputString += String(fullOutput);
     }
   }
+  
   Serial.println(outputString);
   inputString = "";
 }
@@ -204,4 +222,25 @@ bool rightIROnLine(){
     onLine = true;
   }
   return onLine;
+}
+
+void parseVelCommand(String command){
+  vel=0;
+  theta=0;
+  phi=0;
+  String velCommand = command.substring(0, command.indexOf(",") - 1);
+  command = command.substring(command.indexOf(","));
+  String thetaCommand = command.substring(0, command.indexOf(",") - 1);
+  String phiCommand = command.substring(command.indexOf(","));;
+  vel = velCommand.toFloat();
+  theta = thetaCommand.toFloat();
+  phi = phiCommand.toFloat();
+  startDrivePolar();
+}
+
+void startDrivePolar(){
+  frontMotor.setSpeed(vel * -1 * sin(theta + phi));
+  backMotor.setSpeed(vel * sin(theta + phi));
+  leftMotor.setSpeed(vel * cos(theta + phi));
+  rightMotor.setSpeed(vel * -1 * cos(theta + phi));
 }

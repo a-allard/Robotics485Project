@@ -125,7 +125,7 @@ class remoteControl(teensy):
     def getRemoteCommand(self):
         # CONTROLMODE,VEL,THETA,PHI
         # all values are relative to the forward direction of REx
-        motionControllerMode= self.query('fcs').split(',')
+        motionControllerMode = self.query('fcs').split(',')
         return (int(motionControllerMode[0]),
                 float(motionControllerMode[1]),
                 float(motionControllerMode[2]),

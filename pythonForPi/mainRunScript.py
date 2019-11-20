@@ -10,6 +10,10 @@ from camera import RExEye
 import time
 
 
+def fullRemoteDrive():
+    while remoteControl.getControllerMode() == 2:
+        motors.sendMoveCommand(*remoteControl.getRemoteVectors())
+        time.sleep(0.1)
 
 def main():
     # go REx Go!
@@ -18,6 +22,8 @@ def main():
     motorControl.enterLineFollow()
     while motorControl.queryLineStatus() == 1:
         time.sleep(1)
+    if remoteControl.getControllerMode() == 2:
+        fullRemoteDrive()
     unFilteredPeople, filteredPeople = cam.findPeople()
     cam.findFavoritePerson(filteredPeople)
 
