@@ -8,11 +8,12 @@ Created on Mon Nov 18 08:07:55 2019
 from botPeripherals import remoteControl, motorControl
 from camera import RExEye
 import time
+import numpy as np
 
 
 def fullRemoteDrive():
-    while remoteControl.getControllerMode() == 2:
-        motors.sendMoveCommand(*remoteControl.getRemoteVectors())
+    while remote.getControllerMode() == 2:
+        motors.sendMoveCommand(*remote.getRemoteVectors())
         time.sleep(0.1)
 
 def main():
@@ -22,16 +23,13 @@ def main():
     motorControl.enterLineFollow()
     while motorControl.queryLineStatus() == 1:
         time.sleep(1)
-    if remoteControl.getControllerMode() == 2:
-        fullRemoteDrive()
-    unFilteredPeople, filteredPeople = cam.findPeople()
-    cam.findFavoritePerson(filteredPeople)
-
-
-
-
-
-
+    while 1:
+        if remoteControl.getControllerMode() == 2:
+            fullRemoteDrive()
+        unFilteredPeople, filteredPeople = cam.findPeople()
+        x,y = cam.findFavoritePersonLocation(filteredPeople)
+        v,th,ph = remote.getRemoteVectors()
+        motors.sendMoveCommand(v, th, x * np.pi / 3)
 
 
 
