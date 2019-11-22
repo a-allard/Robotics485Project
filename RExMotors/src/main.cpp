@@ -2,29 +2,29 @@
 #include "../lib/HBridge/HBridge.h"
 
 // The many... many... pin declarations.
-#define frontMotorEncoderA 0
-#define frontMotorEncoderB 1
-#define frontHBridgeA 2
-#define frontHBridgeB 3
-#define frontHBridgeEnable 4
+#define frontMotorEncoderA 13
+#define frontMotorEncoderB 14
+#define frontHBridgeA 9
+#define frontHBridgeB 10
+#define frontHBridgeEnable 11
 
-#define backMotorEncoderA 5
-#define backMotorEncoderB 6
-#define backHBridgeA 7
-#define backHBridgeB 8
-#define backHBridgeEnable 9
+#define backMotorEncoderA 15
+#define backMotorEncoderB 16
+#define backHBridgeA 6
+#define backHBridgeB 7
+#define backHBridgeEnable 8
 
-#define leftMotorEncoderA 10
-#define leftMotorEncoderB 11
-#define leftHBridgeA 12
-#define leftHBridgeB 13
-#define leftHBridgeEnable 14
+#define leftMotorEncoderA 20
+#define leftMotorEncoderB 21
+#define leftHBridgeA 1
+#define leftHBridgeB 2
+#define leftHBridgeEnable 3
 
-#define rightMotorEncoderA 16
-#define rightMotorEncoderB 17
-#define rightHBridgeA 18
-#define rightHBridgeB 19
-#define rightHBridgeEnable 20
+#define rightMotorEncoderA 22
+#define rightMotorEncoderB 23
+#define rightHBridgeA 6
+#define rightHBridgeB 5
+#define rightHBridgeEnable 4
 
 #define leftIRPin 21
 #define rightIRPin 22
@@ -45,6 +45,15 @@ String inputString = "";
 float vel = 0, theta = 0, phi = 0;
 bool followLineMode = true;
 
+String returnVelData();
+void parseCMD();
+void followLine();
+void forward(int speed);
+void stopMotors();
+bool rightIROnLine();
+bool leftIROnLine();
+void parseVelCommand(String command);
+void startDrivePolar();
 
 void setup() {
   Serial.begin(115200);
@@ -85,12 +94,13 @@ void serialEvent(){
 void parseCMD(){
   if(inputString.length() < 3){
     Serial.println("ERROR: Invalid input string");
+    inputString = "";
     return;
   }
   inputString.trim();
   inputString.replace(" ", "");
   inputString.toLowerCase();
-  String cmd = String(inputString[0] + inputString[1] + inputString[2]);
+  String cmd = String(inputString[0]) + String(inputString[1]) + String(inputString[2]);
   String outputString = "";
   if(fullOutput){
     outputString += cmd + String(" = ");
@@ -193,6 +203,9 @@ void stopMotors(){
   backMotor.stop();
   leftMotor.stop();
   rightMotor.stop();
+  vel=0;
+  theta=0;
+  phi=0;
 }
 
 bool leftIROnLine(){
@@ -228,10 +241,10 @@ void parseVelCommand(String command){
   vel=0;
   theta=0;
   phi=0;
-  String velCommand = command.substring(0, command.indexOf(",") - 1);
-  command = command.substring(command.indexOf(","));
-  String thetaCommand = command.substring(0, command.indexOf(",") - 1);
-  String phiCommand = command.substring(command.indexOf(","));;
+  String velCommand = command.substring(0, command.indexOf(","));
+  command = command.substring(command.indexOf(",") + 1);
+  String thetaCommand = command.substring(0, command.indexOf(","));
+  String phiCommand = command.substring(command.indexOf(",") + 1);
   vel = velCommand.toFloat();
   theta = thetaCommand.toFloat();
   phi = phiCommand.toFloat();
@@ -243,4 +256,9 @@ void startDrivePolar(){
   backMotor.setSpeed(vel * sin(theta + phi));
   leftMotor.setSpeed(vel * cos(theta + phi));
   rightMotor.setSpeed(vel * -1 * cos(theta + phi));
+
+  frontMotor.start();
+  backMotor.start();
+  leftMotor.start();
+  rightMotor.start();
 }

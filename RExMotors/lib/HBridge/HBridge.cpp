@@ -20,7 +20,7 @@ void L298n::setSpeed(int speed){
     }
     this->speed=speed;
 }
-void L298n::setDirection(bool ccw=false, bool seconCall=false){
+void L298n::setDirection(bool ccw=false, bool seconCall){
     if(!(seconCall)){
         if(this->directionFlipped){
             this->setDirection(!ccw, true);
@@ -39,14 +39,14 @@ void L298n::setDirection(bool ccw=false, bool seconCall=false){
         this->forward=false;
     }
 }
-void L298n::setupEncoders(uint8_t aPin, uint8_t bPin, bool inverted=false){
+void L298n::setupEncoders(uint8_t aPin, uint8_t bPin, bool inverted){
     this->encoderAPin=aPin;
     this->encoderBPin=bPin;
     this->encoderDirectionFlipped=inverted;
     pinMode(this->encoderAPin, INPUT);
     pinMode(this->encoderBPin, INPUT);
-    this->motorEncoder = new Encoder(this->encoderTimer, this->encoderBPin);
-    this->encoderTimer.begin(this->timerCallbackReadEncoder, 10000);
+    this->motorEncoder = new Encoder(this->encoderAPin, this->encoderBPin);
+    //this->encoderTimer.begin(this->timerCallbackReadEncoder, 10000);
 }
 int L298n::getSpeedSetting(){
     return this->speed;
@@ -54,7 +54,7 @@ int L298n::getSpeedSetting(){
 float L298n::getSpeed(){
     return round(this->speedReading);
 }
-void L298n::setFlippedDirection(bool flipped=false){
+void L298n::setFlippedDirection(bool flipped){
     this->directionFlipped=flipped;
 }
 void L298n::start(){

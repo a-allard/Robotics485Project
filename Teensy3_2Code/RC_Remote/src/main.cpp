@@ -9,6 +9,11 @@
 #define phiMax 2*3.141596
 #define phiMin 0
 
+void updateVals();
+void parseCMD();
+String formVelThePhi();
+String formFullCMD();
+
 const int velServoPin=0, thetaServoPin=1, phiServoPin=2, controllerModeServoPin=3;
 bool fullOutput = false;
 
@@ -62,12 +67,13 @@ void serialEvent(){
 void parseCMD(){
   if(inputString.length() < 3){
     Serial.println("ERROR: Invalid input string");
+    inputString = "";
     return;
   }
   inputString.trim();
   inputString.replace(" ", "");
   inputString.toLowerCase();
-  String cmd = String(inputString[0] + inputString[1] + inputString[2]);
+  String cmd = String(inputString[0]) + String(inputString[1]) + String(inputString[2]);
   String outputString = "";
   if(fullOutput){
     outputString += cmd + String(" = ");
@@ -99,15 +105,17 @@ String formFullCMD(){
   return String(controllerMode) + "," + String(vel) + "," + String(theta) +  "," + String(phi);
 }
 
-void updateVals()
-{
-  vel = mapD(velServoSig.read(), MIN_PULSE_WIDTH, MAX_PULSE_WIDTH, velMin, velMax);
-  theta = mapD(thetaServoSig.read(), MIN_PULSE_WIDTH, MAX_PULSE_WIDTH, thetaMin, thetaMax);
-  phi = mapD(phiServoSig.read(), MIN_PULSE_WIDTH, MAX_PULSE_WIDTH, phiMin, phiMax);
-  controllerMode = (int)round(mapD(controllerModeServoSig.read(), MIN_PULSE_WIDTH, MAX_PULSE_WIDTH, 0, 2));
-}
 
 double mapD(double val, double fromA, double fromB, double toA, double toB)
 {
   return (val - fromA) * toB / fromA + toA;
+}
+
+void updateVals()
+{
+  Serial.println("teting");
+  vel = mapD(velServoSig.read(), MIN_PULSE_WIDTH, MAX_PULSE_WIDTH, velMin, velMax);
+  theta = mapD(thetaServoSig.read(), MIN_PULSE_WIDTH, MAX_PULSE_WIDTH, thetaMin, thetaMax);
+  phi = mapD(phiServoSig.read(), MIN_PULSE_WIDTH, MAX_PULSE_WIDTH, phiMin, phiMax);
+  controllerMode = (int)round(mapD(controllerModeServoSig.read(), MIN_PULSE_WIDTH, MAX_PULSE_WIDTH, 0, 1)) + 1;
 }
