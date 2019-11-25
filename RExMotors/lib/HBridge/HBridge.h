@@ -2,6 +2,7 @@
 #define __HBridge__
 #include "Arduino.h"
 #include <Encoder.h>
+#include <IntervalTimer.h>
 
 class L298n
 {
@@ -13,9 +14,7 @@ class L298n
     int speed=0;
     float speedReading=0;  //RPMs
     bool directionFlipped=false;
-    IntervalTimer encoderTimer;
     Encoder *motorEncoder;
-    void timerCallbackReadEncoder();
 
     public:
     L298n(uint8_t inApin, uint8_t inBpin, uint8_t enablePin);
@@ -27,6 +26,7 @@ class L298n
     void setFlippedDirection(bool flipped=false);
     void start();
     void stop();
+    void timerCallbackReadEncoder(double time);
 };
 
 #endif
