@@ -18,13 +18,13 @@
 #define leftMotorEncoderB 21
 #define leftHBridgeA 1
 #define leftHBridgeB 2
-#define leftHBridgeEnable 3
+#define leftHBridgeEnable 0
 
 #define rightMotorEncoderA 22
 #define rightMotorEncoderB 23
-#define rightHBridgeA 6
-#define rightHBridgeB 5
-#define rightHBridgeEnable 4
+#define rightHBridgeA 3
+#define rightHBridgeB 4
+#define rightHBridgeEnable 5
 
 #define leftIRPin 21
 #define rightIRPin 22
