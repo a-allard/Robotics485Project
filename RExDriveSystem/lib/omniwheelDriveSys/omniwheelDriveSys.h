@@ -6,7 +6,9 @@
 
 class OmniwheelDriveSys {
 private:
-    
+    int pwmF=0, pwmB=0, pwmL=0, pwmR=0;
+    int linX=0, linY=0;
+    int ang=0;
 public:
     Motor Front, Back, Left, Right;
     OmniwheelDriveSys(void) {
@@ -22,32 +24,54 @@ public:
         Right = R;
     }
     void driveForward(int speed) {
-        Left.spinCCW(speed);
-        Right.spinCW(speed);
+        linY = speed;
+        pwmL = max(-linY + ang, -255);
+        pwmR = min(linY + ang, 255);
+        Left.velocity(pwmL);
+        Right.velocity(pwmR);
     }
     void driveBackward(int speed) {
-        Left.spinCW(speed);
-        Right.spinCCW(speed);
+        linY = -speed;
+        pwmL = min(-linY + ang, 255);
+        pwmR = max(linY + ang, 255);
+        Left.velocity(pwmL);
+        Right.velocity(pwmR);
     }
     void driveLeft(int speed) {
-        Front.spinCW(speed);
-        Back.spinCCW(speed);
+        linX = -speed;
+        pwmF = min(-linX + ang, 255);
+        pwmB = max(linX + ang, -255);
+        Front.velocity(pwmF);
+        Back.velocity(pwmB);
     }
     void driveRight(int speed) {
-        Front.spinCCW(speed);
-        Back.spinCW(speed);
+        linX = speed;
+        pwmF = max(-linX + ang, -255);
+        pwmB = min(linX + ang, 255);
+        Front.velocity(pwmF);
+        Back.velocity(pwmB);
     }
     void rotateCW(int speed) {
-        Front.spinCCW(speed);
-        Back.spinCCW(speed);
-        Left.spinCCW(speed);
-        Right.spinCCW(speed);
+        ang = speed;
+        pwmF = min(-linX + ang, 255);
+        pwmB = min(linX + ang, 255);
+        pwmL = min(-linY + ang, 255);
+        pwmR = min(linY + ang, 255);
+        Front.velocity(pwmF);
+        Back.velocity(pwmB);
+        Left.velocity(pwmL);
+        Right.velocity(pwmR);
     }
     void rotateCCW(int speed) {
-        Front.spinCW(speed);
-        Back.spinCW(speed);
-        Left.spinCW(speed);
-        Right.spinCW(speed);
+        ang = -speed;
+        pwmF = max(-linX + ang, -255);
+        pwmB = max(linX + ang, -255);
+        pwmL = max(-linY + ang, -255);
+        pwmR = max(linY + ang, -255);
+        Front.velocity(pwmF);
+        Back.velocity(pwmB);
+        Left.velocity(pwmL);
+        Right.velocity(pwmR);
     }
     void activeStop(void) {
         Front.activeStop();
@@ -55,9 +79,25 @@ public:
         Left.activeStop();
         Right.activeStop();
     }
+    void activeStopHoriz(void) {
+        Front.activeStop();
+        Back.activeStop();
+    }
+    void activeStopVert(void) {
+        Left.activeStop();
+        Right.activeStop();
+    }
     void passiveStop(void) {
         Front.passiveStop();
         Back.passiveStop();
+        Left.passiveStop();
+        Right.passiveStop();
+    }
+    void passiveStopHoriz(void) {
+        Front.passiveStop();
+        Back.passiveStop();
+    }
+    void passiveStopVert(void) {
         Left.passiveStop();
         Right.passiveStop();
     }
