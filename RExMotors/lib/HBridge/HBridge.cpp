@@ -20,7 +20,7 @@ void L298n::setSpeed(int speed){
     }
     this->speed=speed;
 }
-void L298n::setDirection(bool ccw=false, bool seconCall){
+void L298n::setDirection(bool ccw=false, bool seconCall=false){
     if(!(seconCall)){
         if(this->directionFlipped){
             this->setDirection(!ccw, true);
@@ -46,7 +46,6 @@ void L298n::setupEncoders(uint8_t aPin, uint8_t bPin, bool inverted){
     pinMode(this->encoderAPin, INPUT);
     pinMode(this->encoderBPin, INPUT);
     this->motorEncoder = new Encoder(this->encoderAPin, this->encoderBPin);
-    //this->encoderTimer.begin(this->timerCallbackReadEncoder, 10000);
 }
 int L298n::getSpeedSetting(){
     return this->speed;
@@ -64,7 +63,8 @@ void L298n::stop(){
     digitalWriteFast(this->hBridgeEnablePin, LOW);
 }
 
-void L298n::timerCallbackReadEncoder(){
+void L298n::timerCallbackReadEncoder(double time){
     int32_t counts = this->motorEncoder->read();
-    this->speedReading = (float)counts / (float)this->countsPerRev / (float)this->gearBox / 0.01 * 60;
+    this->motorEncoder->write(0);
+    this->speedReading = (float)counts / (float)this->countsPerRev / (float)this->gearBox / time * 60;
 }

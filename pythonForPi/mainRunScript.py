@@ -9,6 +9,7 @@ from botPeripherals import remoteControl, motorControl
 from camera import RExEye
 import time
 import numpy as np
+import cv2
 
 
 def fullRemoteDrive():
@@ -16,16 +17,24 @@ def fullRemoteDrive():
         motors.sendMoveCommand(*remote.getRemoteVectors())
         time.sleep(0.1)
 
+def lineFollow():
+    while remote.getControllerMode() == 0:
+        img = cam.__captureImage__()
+        img2 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+
+
+
+
 def main():
     # go REx Go!
-    motorControl.stop()
+    motors.stop()
     time.sleep(0.1)
-    motorControl.enterLineFollow()
-    while motorControl.queryLineStatus() == 1:
-        time.sleep(1)
     while 1:
-        if remoteControl.getControllerMode() == 2:
+        if remote.getControllerMode() == 2:
             fullRemoteDrive()
+        if remote.getControllerMode() == 1:
+            lineFollow()
         unFilteredPeople, filteredPeople = cam.findPeople()
         x,y = cam.findFavoritePersonLocation(filteredPeople)
         v,th,ph = remote.getRemoteVectors()

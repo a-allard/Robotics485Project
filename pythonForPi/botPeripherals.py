@@ -21,13 +21,13 @@ class teensy(Serial):
             self.openPort()
     def openPort(self):
         ports = comports()
-        super(Serial, self).__init__(self.__findTeensy__(ports), 115200)
+        Serial.__init__(self, self.__findTeensy__(ports), 115200)
         self.timeout = 0.01
     def __findTeensy__(self, ports):
         if not self._TEENSY_DESCRIPTION:
             port = ports[0].device
-        port = [a.device for a in ports if self._TEENSY_DESCRIPTION in a.description]
-        if len(port) == 1:
+        port = [a.device for a in ports if a.serial_number if self._TEENSY_DESCRIPTION in a.serial_number]
+        if isinstance(port, str):
             return port
         else:
             return port[0]
@@ -41,7 +41,7 @@ class teensy(Serial):
 
 class motorControl(teensy):
     def __init__(self):
-        super(teensy, self).__init__('TEENSY40', True)
+        teensy.__init__(self, '1333910', True)
         self.write('fco 0'.encode())
     def sendMoveCommand(self, velMag, velDirection, rotation):
         """
@@ -119,7 +119,7 @@ class motorControl(teensy):
 
 class remoteControl(teensy):
     def __init__(self):
-        super(teensy, self).__init__('TEENSY32', True)
+        teensy.__init__(self, '6239680', True)
         self.write('fco 0'.encode())
 
     def getRemoteCommand(self):

@@ -38,12 +38,15 @@ L298n frontMotor(frontHBridgeA, frontHBridgeB, frontHBridgeEnable);
 L298n backMotor(backHBridgeA, backHBridgeB, backHBridgeEnable);
 L298n leftMotor(leftHBridgeA, leftHBridgeB, leftHBridgeEnable);
 L298n rightMotor(rightHBridgeA, rightHBridgeB, rightHBridgeEnable);
+double motorUpdateRate = 10000;
+IntervalTimer motorTimer;
 
 //Serial and communication crap
 bool fullOutput = false;
 String inputString = "";
 float vel = 0, theta = 0, phi = 0;
 bool followLineMode = true;
+double frontMotorSpeedRPM = 0, backMotorSpeedRPM = 0, leftMotorSpeedRPM = 0, rightMotorSpeedRPM = 0;
 
 String returnVelData();
 void parseCMD();
@@ -54,6 +57,7 @@ bool rightIROnLine();
 bool leftIROnLine();
 void parseVelCommand(String command);
 void startDrivePolar();
+void motorTimerCallback();
 
 void setup() {
   Serial.begin(115200);
@@ -61,13 +65,41 @@ void setup() {
   backMotor.setupEncoders(backMotorEncoderA, backMotorEncoderB);
   leftMotor.setupEncoders(leftMotorEncoderA, leftMotorEncoderB);
   rightMotor.setupEncoders(rightMotorEncoderA, rightMotorEncoderB);
+  motorTimer.begin(motorTimerCallback, motorUpdateRate);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   if(followLineMode){
-    followLine();
+    //followLine();
   }
+}
+
+void checkMotorVelocities(){
+/*
+This is where Allard needs to figure out how fast he wants to travel
+*/
+
+
+}
+void updateSingleMotorVel(L298n motor){
+
+}
+
+void calcMotorRPMs(){
+
+}
+
+void startDrivePolar(){
+  frontMotor.setSpeed(vel * -1 * sin(theta + phi) * 256);
+  backMotor.setSpeed(vel * sin(theta + phi) * 256);
+  leftMotor.setSpeed(vel * cos(theta + phi) * 256);
+  rightMotor.setSpeed(vel * -1 * cos(theta + phi) * 256);
+
+  frontMotor.start();
+  backMotor.start();
+  leftMotor.start();
+  rightMotor.start();
 }
 
 void serialEvent(){
@@ -251,14 +283,9 @@ void parseVelCommand(String command){
   startDrivePolar();
 }
 
-void startDrivePolar(){
-  frontMotor.setSpeed(vel * -1 * sin(theta + phi));
-  backMotor.setSpeed(vel * sin(theta + phi));
-  leftMotor.setSpeed(vel * cos(theta + phi));
-  rightMotor.setSpeed(vel * -1 * cos(theta + phi));
-
-  frontMotor.start();
-  backMotor.start();
-  leftMotor.start();
-  rightMotor.start();
+void motorTimerCallback(){
+  frontMotor.timerCallbackReadEncoder(motorUpdateRate);
+  backMotor.timerCallbackReadEncoder(motorUpdateRate);
+  leftMotor.timerCallbackReadEncoder(motorUpdateRate);
+  rightMotor.timerCallbackReadEncoder(motorUpdateRate);
 }
