@@ -25,7 +25,8 @@ for frame in cam.capture_continuous(array, format='bgr', use_video_port=True):
     img = frame.array
     img = imutils.resize(img, 400)
     img2 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(img2, (9, 9), 2)
+    img2 = cv2.dilate(img2, np.ones((3, 3)))
+    blurred = cv2.GaussianBlur(img2, (3, 3), 2)
     edged = cv2.Canny(blurred, 80, 150)
     lines = cv2.HoughLinesP(edged, 1, np.pi/180, 30, 90, 1)
     if not lines is None:
@@ -42,13 +43,13 @@ for frame in cam.capture_continuous(array, format='bgr', use_video_port=True):
                 dely = 1
             thetas[index, 0] = np.arctan(delx/dely)
             index += 1
-        numParLines = np.array([len(thetas[0.03>abs(thetas[:, 0] - t), 0]) / lines.shape[0] / (np.sqrt((y2-y1)**2 + (x2-x1)**2) / 50) * y2 for t in thetas[:, 0]])
+        numParLines = np.array([len(thetas[0.03 > abs(thetas[:, 0] - t), 0]) / lines.shape[0] / (np.sqrt((y2-y1)**2 + (x2-x1)**2) / 50) * y2 for t in thetas[:, 0]])
         thetasToAverage[imageIndex] = thetas[numParLines.argmax(), 0]
         imageIndex += 1
         if imageIndex == numToAverage:
             imageIndex = 0
             theta = thetasToAverage.mean()
-        cv2.arrowedLine(img, (250, 200), (int(round(250 + 30*np.sin(np.pi - theta))), int(round(200 + 30*np.cos(np.pi - theta)))), (100,0,255), 2)
+        cv2.arrowedLine(img, (250, 200), (int(round(250 + 30*np.sin(np.pi - theta))), int(round(200 + 30*np.cos(np.pi - theta)))), (100, 0, 255), 2)
     frame.truncate(0)
     cv2.imshow('testing', img)
     cv2.waitKey(40)
