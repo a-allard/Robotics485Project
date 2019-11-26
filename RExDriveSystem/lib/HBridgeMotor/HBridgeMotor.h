@@ -13,9 +13,9 @@ private:
 public:
     // constructors
     Motor(void) {
-        pinA = 16;
-        pinB = 17;
-        pinE = 18;
+        pinA = 0;
+        pinB = 1;
+        pinE = 2;
         pinMode(pinA, OUTPUT);
         pinMode(pinB, OUTPUT);
         pinMode(pinE, OUTPUT);
@@ -35,6 +35,15 @@ public:
     bool getStateB(void) {return stateB;}
     int  getStateE(void) {return stateE;}
 
+    void velocity(int speed) {
+        if (speed > 0) {
+            spinCW(speed);
+        } else if (speed < 0) {
+            spinCCW(-speed);
+        } else {
+            passiveStop();
+        }
+    }
     void spinCW(int speed) {
         stateA = HIGH;
         stateB = LOW;

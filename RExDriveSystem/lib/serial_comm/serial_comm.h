@@ -23,11 +23,12 @@ String getSerialMsg(void) {
   // no messages should be longer than 64 characters
   static String message;
   String temp;
-  char buffer = ' ';
+  char buffer;
   //for (int i = 0; i < 64; i++) {
   //  while(!Serial.available()); // wait until something is sent
     buffer = Serial.read();
-    if (buffer == '\n') {
+    // Serial.print(buffer);
+    if (buffer == '\r') {
       temp = message;
       message = "";
       return temp;

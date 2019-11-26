@@ -1,13 +1,15 @@
 #include "RExDriveSystem.h"
 
+#define DEADVOLT 140 // PWM value [0:255] that barely turns on the motors
+
 // declare IR reflective sensors
 
 
 // declare motors (pinA, pinB, pinE)
-Motor Right(7, 8, 9);
-Motor Left(10, 11, 12);
-Motor Back(13, 14, 15);
-Motor Front(16, 17, 18);
+Motor Left(0, 1, 2);
+Motor Right(3, 4, 5);
+Motor Front(6, 7, 8);
+Motor Back(9, 10, 11);
 
 OmniwheelDriveSys REx(Front, Back, Left, Right); 
 
@@ -25,19 +27,21 @@ float command[4] = {0.0, 0.0, 0.0, 0.0};
 bool cmd_flag = false;
 bool followLineMode = false;
 
-float setVel, measVel;
-float setDir, measDir;
-float setOri, measOri;
+float setVel, measVel=0;
+float setDir, measDir=0;
+float setOri, measOri=0;
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
+  Serial.begin(9600);
+  //Serial.println("My name is REx. Hear me ROAR!\n");
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   if (cmd_flag) {
     // a new command has been received from the RPI
+    //Serial.println(message);
     parseMsg(command, message);
 
     switch((int)command[0]) {
@@ -99,16 +103,48 @@ void reportVelocity(void) {
 }
 
 // use recieved data to set current velocity
-void setVelocity(float goalVel, float goalDir, float goalOri) {
-  setVel += goalVel - measVel;
-  setDir += goalDir - measDir;
-  setOri += goalOri - measOri;
+// x & y exist in range [-100%,100%], and theta from [-pi, pi]
+void setVelocity(float xVel, float yVel, float theta) {
+  // setVel += goalVel - measVel;
+  // setDir += goalDir - measDir;
+  // setOri += goalOri - measOri;
+  float speed = 0;
+  if (xVel > 0) {
+    speed = map((int)xVel, 0, 100, DEADVOLT, 255);
+    REx.driveRight(speed);
+  } else if (xVel < 0) {
+    speed = map((int)xVel*(-1), 0, 100, DEADVOLT, 255);
+    REx.driveLeft(speed);
+  } else {
+    REx.driveLeft(0);
+  }
+
+  if (yVel > 0) {
+    speed = map((int)yVel, 0, 100, DEADVOLT, 255);
+    REx.driveForward(speed);
+  } else if (yVel < 0) {
+    speed = map((int)yVel*(-1), 0, 100, DEADVOLT, 255);
+    REx.driveBackward(speed);
+  } else {
+    REx.driveForward(0);
+  }
+
+  if (theta > 0) {
+    speed = map(theta, 0, 100, DEADVOLT, 255);
+    REx.rotateCCW(speed);
+  } else if (theta < 0) {
+    speed = map(theta*(-1), 0, 100, DEADVOLT, 255);
+    REx.rotateCW(speed);
+  } else {
+    REx.rotateCW(0);
+  }
+
   Serial.println("0");
 }
 
 // the command received was unknown
 void askMsgAgain(void) {
-  Serial.println("1"); 
+  Serial.println("ERR"); 
 }
 
 void followLine(void) {
