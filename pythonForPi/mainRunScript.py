@@ -18,9 +18,8 @@ def fullRemoteDrive():
 
 def main():
     # go REx Go!
-    motorControl.stop()
+    motors.stop()
     time.sleep(0.1)
-    motorControl.enterLineFollow()
     while motorControl.queryLineStatus() == 1:
         time.sleep(1)
     while 1:
