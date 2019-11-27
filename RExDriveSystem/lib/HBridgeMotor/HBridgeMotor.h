@@ -2,13 +2,16 @@
 #define HBRIDGEMOTOR
 
 #include <Arduino.h>
+#include <Encoder.h>
 
 class Motor {
 private:
     int pinA, pinB, pinE;
+    int encoderA = -1, encoderB = -1;
     bool stateA=HIGH; 
     bool stateB=HIGH;
     int  stateE=0;
+    Encoder *motorEncoder;
     
 public:
     // constructors
@@ -27,6 +30,27 @@ public:
         pinMode(pinA, OUTPUT);
         pinMode(pinB, OUTPUT);
         pinMode(pinE, OUTPUT);
+    }
+    Motor(int A, int B, int E, int encoderA, int encoderB){
+        pinA = A;
+        pinB = B;
+        pinE = E;
+        pinMode(pinA, OUTPUT);
+        pinMode(pinB, OUTPUT);
+        pinMode(pinE, OUTPUT);
+        this->setupEncoder(encoderA, encoderB);
+    }
+    void setupEncoder(int encoderA, int encoderB){
+        this->encoderA = encoderA;
+        this->encoderB = encoderB;
+        pinMode(this->encoderA, INPUT);
+        pinMode(this->encoderB, INPUT);
+        this->motorEncoder = new Encoder(this->encoderA, this->encoderB);
+    }
+    int32_t getEncoderValue(){
+        int32_t value = this->motorEncoder->read();
+        this->motorEncoder->write(0);
+        return value;
     }
     int  getPinA(void) {return pinA;}
     int  getPinB(void) {return pinB;}
