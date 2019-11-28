@@ -76,10 +76,16 @@ cv2.imshow('diffThresh', difference)
 
 im2, obsticleContours, hierachy = cv2.findContours(difference, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 
-obsticleContours = [c for c in obsticleContours if c.shape[0] > 80]
+#obsticleContours = [c for c in obsticleContours if c.shape[0] > 80]
 
-obsticleContoursRefined = [c for c in obsticleContours if (c[:,0,:].max(0) - c[:,0,:].min(0)).min() > 10]
+obsticleContoursRefined = [c for c in obsticleContours if
+                           (c[:, 0, :].max(0) - c[:, 0, :].min(0)).min() >
+                           10]
 
-imgContours = cv2.drawContours(img.copy(), obsticleContoursRefined, -1, (0, 255, 0), 3)
+maxs = np.array([c[:, 0, :].max(0) for c in obsticleContoursRefined]).max(0)
+mins = np.array([c[:, 0, :].min(0) for c in obsticleContoursRefined]).min(0)
+
+imgContours = cv2.drawContours(img.copy(), obsticleContoursRefined, -1, (0, 220, 250), 2)
+imgContours = cv2.rectangle(imgContours, (mins[0], mins[1]), (maxs[0], maxs[1]), (255, 0, 0), 1)
 
 cv2.imshow('obsicles', imgContours)
