@@ -28,7 +28,7 @@ String getSerialMsg(void) {
   //  while(!Serial.available()); // wait until something is sent
     buffer = Serial.read();
     // Serial.print(buffer);
-    if (buffer == '\n') {
+    if (buffer == '\r') {
       temp = message;
       message = "";
       return temp;

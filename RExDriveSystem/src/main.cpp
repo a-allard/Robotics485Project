@@ -5,11 +5,11 @@
 // declare IR reflective sensors
 
 
-// declare motors (pinA, pinB, pinE)
-Motor Left(0, 1, 2);
-Motor Right(3, 4, 5);
-Motor Front(6, 7, 8);
-Motor Back(9, 10, 11);
+// declare motors (pinA, pinB, pinE, pinEncA, pinEncB)
+Motor Left(0, 1, 2, 14, 15);
+Motor Right(3, 4, 5, 16, 17);
+Motor Front(6, 7, 8, 18, 19);
+Motor Back(9, 10, 11, 20, 21);
 
 OmniwheelDriveSys REx(Front, Back, Left, Right); 
 
@@ -26,10 +26,6 @@ String message;
 float command[4] = {0.0, 0.0, 0.0, 0.0};
 bool cmd_flag = false;
 bool followLineMode = false;
-
-float setVel, measVel=0;
-float setDir, measDir=0;
-float setOri, measOri=0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -94,21 +90,19 @@ void lineFollowingMode(bool mode) {
 
 // Send velocity data to RPI
 void reportVelocity(void) {
-  Serial.print(measVel);
-  Serial.print(",");
-  Serial.print(measDir);
-  Serial.print(",");
-  Serial.println(measOri);
-  Serial.println("0");
+  // Serial.print(setVelF);
+  // Serial.print(",");
+  // Serial.print(setVelL);
+  // Serial.print(",");
+  // Serial.println(setVelR);
+  Serial.println("ERR");
 }
 
 // use recieved data to set current velocity
 // x & y exist in range [-100%,100%], and theta from [-pi, pi]
 void setVelocity(float xVel, float yVel, float theta) {
-  // setVel += goalVel - measVel;
-  // setDir += goalDir - measDir;
-  // setOri += goalOri - measOri;
   float speed = 0;
+
   if (xVel > 0) {
     speed = map((int)xVel, 0, 100, DEADVOLT, 255);
     REx.driveRight(speed);

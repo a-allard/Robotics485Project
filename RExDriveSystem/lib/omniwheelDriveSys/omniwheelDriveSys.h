@@ -4,18 +4,23 @@
 #include <Arduino.h>
 #include "../HBridgeMotor/HBridgeMotor.h"
 
+
 class OmniwheelDriveSys {
 private:
-    int pwmF=0, pwmB=0, pwmL=0, pwmR=0;
+    float setVelF, goalVelF, measVelF;
+    float setVelB, goalVelB, measVelB;
+    float setVelL, goalVelL, measVelL;
+    float setVelR, goalVelR, measVelR;
     int linX=0, linY=0;
     int ang=0;
 public:
     Motor Front, Back, Left, Right;
     OmniwheelDriveSys(void) {
-        Motor Right(7, 8, 9);
-        Motor Left(10, 11, 12);
-        Motor Back(13, 14, 15);
-        Motor Front(16, 17, 18);
+        // declare motors (pinA, pinB, pinE, pinEncA, pinEncB)
+        Left = Motor(0, 1, 2, 14, 15);
+        Right = Motor(3, 4, 5, 16, 17);
+        Front = Motor(6, 7, 8, 18, 19);
+        Back = Motor(9, 10, 11, 20, 21);
     }
     OmniwheelDriveSys(Motor &F, Motor &B, Motor &L, Motor &R) {
         Front = F;
@@ -25,53 +30,85 @@ public:
     }
     void driveForward(int speed) {
         linY = speed;
-        pwmL = max(-linY + ang, -255);
-        pwmR = min(linY + ang, 255);
-        Left.velocity(pwmL);
-        Right.velocity(pwmR);
+        goalVelL = max(-linY + ang, -255);
+        goalVelR = min(linY + ang, 255);
+        measVelL = Left.readVelocity();
+        measVelR = Right.readVelocity();
+        setVelL += goalVelL - measVelL*255;
+        setVelR += goalVelR - measVelR*255;
+        Left.setVelocity(setVelL);
+        Right.setVelocity(setVelR);
     }
     void driveBackward(int speed) {
         linY = -speed;
-        pwmL = min(-linY + ang, 255);
-        pwmR = max(linY + ang, 255);
-        Left.velocity(pwmL);
-        Right.velocity(pwmR);
+        goalVelL = min(-linY + ang, 255);
+        goalVelR = max(linY + ang, 255);
+        measVelL = Left.readVelocity();
+        measVelR = Right.readVelocity();
+        setVelL += goalVelL - measVelL*255;
+        setVelR += goalVelR - measVelR*255;
+        Left.setVelocity(setVelL);
+        Right.setVelocity(setVelR);
     }
     void driveLeft(int speed) {
         linX = -speed;
-        pwmF = min(-linX + ang, 255);
-        pwmB = max(linX + ang, -255);
-        Front.velocity(pwmF);
-        Back.velocity(pwmB);
+        goalVelF = min(-linX + ang, 255);
+        goalVelB = max(linX + ang, -255);
+        measVelF = Front.readVelocity();
+        measVelB = Back.readVelocity();
+        setVelF += goalVelF - measVelF*255;
+        setVelB += goalVelB - measVelB*255;
+        Front.setVelocity(setVelF);
+        Back.setVelocity(setVelB);
     }
     void driveRight(int speed) {
         linX = speed;
-        pwmF = max(-linX + ang, -255);
-        pwmB = min(linX + ang, 255);
-        Front.velocity(pwmF);
-        Back.velocity(pwmB);
+        goalVelF = max(-linX + ang, -255);
+        goalVelB = min(linX + ang, 255);
+        measVelF = Front.readVelocity();
+        measVelB = Back.readVelocity();
+        setVelF += goalVelF - measVelF*255;
+        setVelB += goalVelB - measVelB*255;
+        Front.setVelocity(setVelF);
+        Back.setVelocity(setVelB);
     }
     void rotateCW(int speed) {
         ang = speed;
-        pwmF = min(-linX + ang, 255);
-        pwmB = min(linX + ang, 255);
-        pwmL = min(-linY + ang, 255);
-        pwmR = min(linY + ang, 255);
-        Front.velocity(pwmF);
-        Back.velocity(pwmB);
-        Left.velocity(pwmL);
-        Right.velocity(pwmR);
+        goalVelF = min(-linX + ang, 255);
+        goalVelB = min(linX + ang, 255);
+        goalVelL = min(-linY + ang, 255);
+        goalVelR = min(linY + ang, 255);
+        measVelL = Left.readVelocity();
+        measVelR = Right.readVelocity();
+        measVelF = Front.readVelocity();
+        measVelB = Back.readVelocity();
+        setVelL += goalVelL - measVelL*255;
+        setVelR += goalVelR - measVelR*255;
+        setVelF += goalVelF - measVelF*255;
+        setVelB += goalVelB - measVelB*255;
+        Front.setVelocity(setVelF);
+        Back.setVelocity(setVelB);
+        Left.setVelocity(setVelL);
+        Right.setVelocity(setVelR);
     }
     void rotateCCW(int speed) {
         ang = -speed;
-        pwmF = max(-linX + ang, -255);
-        pwmB = max(linX + ang, -255);
-        pwmL = max(-linY + ang, -255);
-        pwmR = max(linY + ang, -255);
-        Front.velocity(pwmF);
-        Back.velocity(pwmB);
-        Left.velocity(pwmL);
-        Right.velocity(pwmR);
+        goalVelF = max(-linX + ang, -255);
+        goalVelB = max(linX + ang, -255);
+        goalVelL = max(-linY + ang, -255);
+        goalVelR = max(linY + ang, -255);
+        measVelL = Left.readVelocity();
+        measVelR = Right.readVelocity();
+        measVelF = Front.readVelocity();
+        measVelB = Back.readVelocity();
+        setVelL += goalVelL - measVelL*255;
+        setVelR += goalVelR - measVelR*255;
+        setVelF += goalVelF - measVelF*255;
+        setVelB += goalVelB - measVelB*255;
+        Front.setVelocity(setVelF);
+        Back.setVelocity(setVelB);
+        Left.setVelocity(setVelL);
+        Right.setVelocity(setVelR);
     }
     void activeStop(void) {
         Front.activeStop();
