@@ -8,12 +8,13 @@
 
 
 // declare motors (pinA, pinB, pinE, pinEncA, pinEncB)
-Motor Left(0, 1, 2, 14, 15);
-Motor Right(3, 4, 5, 16, 17);
-Motor Front(6, 7, 8, 18, 19);
-Motor Back(9, 10, 11, 20, 21);
+Motor Left(0, 1, 2, 16, 17);
+Motor Right(3, 4, 5, 23, 22);
+Motor Front(6, 7, 8, 20, 21);
+Motor Back(9, 10, 11, 14, 15);
 
-OmniwheelDriveSys REx(Front, Back, Left, Right); 
+OmniwheelDriveSys REx(Front, Back, Left, Right);
+IntervalTimer t;
 
 // function prototypes
 void stopAllActions(void);
@@ -23,9 +24,10 @@ void reportVelocity(void);
 void setVelocity(float,float,float);
 void askMsgAgain(void);
 void followLine(void);
+void getVels(void);
 
 String message;
-float command[4] = {0.0, 0.0, 0.0, 0.0};
+float command[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
 bool cmd_flag = false;
 bool followLineMode = false;
 
@@ -33,6 +35,7 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   //Serial.println("My name is REx. Hear me ROAR!\n");
+  t.begin(getVels, 100000);
 }
 
 void loop() {
@@ -67,6 +70,7 @@ void loop() {
   } else if (followLineMode) {
     followLine();
   }
+
 }
 
 void serialEvent(void) {
@@ -104,7 +108,7 @@ void reportVelocity(void) {
 // x & y exist in range [-100%,100%], and theta from [-pi, pi]
 void setVelocity(float xVel, float yVel, float theta) {
   float speed = 0;
-  Serial.println("Setting vel");
+  //Serial.println("Setting vel");
   if (xVel > 0) {
     speed = map((int)xVel, 0, 100, DEADVOLT, 255);
     REx.driveRight(speed);
@@ -145,4 +149,15 @@ void askMsgAgain(void) {
 
 void followLine(void) {
   return;
+}
+
+void getVels(){
+  float f = Left.readVelocity();
+  float f1 = Back.readVelocity();
+  float f2 = Front.readVelocity();
+  float f3 = Right.readVelocity();
+  char s[100];
+  sprintf(s, "left: %f, right %f, front %f, back %f", f, f3, f2, f1);
+  //Serial.println(s);
+  Serial.println(millis());
 }

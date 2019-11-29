@@ -28,51 +28,60 @@ public:
         Left = L;
         Right = R;
     }
+    
     void driveForward(int speed) {
         linY = speed;
         goalVelL = max(-linY + ang, -255);
         goalVelR = min(linY + ang, 255);
         //Left.setVelocity(goalVelL);
         //Right.setVelocity(goalVelR);
+        /*
         measVelL = Left.readVelocity();
         measVelR = Right.readVelocity();
         setVelL += goalVelL - measVelL*255;
         setVelR += goalVelR - measVelR*255;
-        Left.setVelocity(setVelL);
-        Right.setVelocity(setVelR);
+        */
+        Left.setVelocity(goalVelL);
+        Right.setVelocity(goalVelR);
     }
     void driveBackward(int speed) {
         linY = -speed;
         goalVelL = min(-linY + ang, 255);
         goalVelR = max(linY + ang, 255);
+        /*
         measVelL = Left.readVelocity();
         measVelR = Right.readVelocity();
         setVelL += goalVelL - measVelL*255;
         setVelR += goalVelR - measVelR*255;
-        Left.setVelocity(setVelL);
-        Right.setVelocity(setVelR);
+        */
+        Left.setVelocity(goalVelL);
+        Right.setVelocity(goalVelR);
     }
     void driveLeft(int speed) {
         linX = -speed;
         goalVelF = min(-linX + ang, 255);
         goalVelB = max(linX + ang, -255);
+        /*
         measVelF = Front.readVelocity();
         measVelB = Back.readVelocity();
         setVelF += goalVelF - measVelF*255;
         setVelB += goalVelB - measVelB*255;
-        Front.setVelocity(setVelF);
-        Back.setVelocity(setVelB);
+        */
+        Front.setVelocity(goalVelF);
+        Back.setVelocity(goalVelB);
     }
     void driveRight(int speed) {
         linX = speed;
         goalVelF = max(-linX + ang, -255);
         goalVelB = min(linX + ang, 255);
+        /*
         measVelF = Front.readVelocity();
         measVelB = Back.readVelocity();
         setVelF += goalVelF - measVelF*255;
         setVelB += goalVelB - measVelB*255;
-        Front.setVelocity(setVelF);
-        Back.setVelocity(setVelB);
+        */
+        Front.setVelocity(goalVelF);
+        Back.setVelocity(goalVelB);
     }
     void rotateCW(int speed) {
         ang = speed;
@@ -80,6 +89,7 @@ public:
         goalVelB = min(linX + ang, 255);
         goalVelL = min(-linY + ang, 255);
         goalVelR = min(linY + ang, 255);
+        /*
         measVelL = Left.readVelocity();
         measVelR = Right.readVelocity();
         measVelF = Front.readVelocity();
@@ -88,10 +98,11 @@ public:
         setVelR += goalVelR - measVelR*255;
         setVelF += goalVelF - measVelF*255;
         setVelB += goalVelB - measVelB*255;
-        Front.setVelocity(setVelF);
-        Back.setVelocity(setVelB);
-        Left.setVelocity(setVelL);
-        Right.setVelocity(setVelR);
+        */
+        Front.setVelocity(goalVelF);
+        Back.setVelocity(goalVelB);
+        Left.setVelocity(goalVelL);
+        Right.setVelocity(goalVelR);
     }
     void rotateCCW(int speed) {
         ang = -speed;
@@ -99,6 +110,7 @@ public:
         goalVelB = max(linX + ang, -255);
         goalVelL = max(-linY + ang, -255);
         goalVelR = max(linY + ang, -255);
+        /*
         measVelL = Left.readVelocity();
         measVelR = Right.readVelocity();
         measVelF = Front.readVelocity();
@@ -107,10 +119,11 @@ public:
         setVelR += goalVelR - measVelR*255;
         setVelF += goalVelF - measVelF*255;
         setVelB += goalVelB - measVelB*255;
-        Front.setVelocity(setVelF);
-        Back.setVelocity(setVelB);
-        Left.setVelocity(setVelL);
-        Right.setVelocity(setVelR);
+        */
+        Front.setVelocity(goalVelF);
+        Back.setVelocity(goalVelB);
+        Left.setVelocity(goalVelL);
+        Right.setVelocity(goalVelR);
     }
     void activeStop(void) {
         Front.activeStop();

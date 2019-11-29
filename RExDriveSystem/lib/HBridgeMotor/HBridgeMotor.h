@@ -17,7 +17,7 @@ private:
     int  stateE=0;
     int tickChange=0;
     float velocity=0;
-    Encoder Enc = Encoder(pinEncA, pinEncB);
+    Encoder *Enc;
 public:
     // constructors
     Motor(void) {
@@ -29,7 +29,7 @@ public:
         pinMode(pinA, OUTPUT);
         pinMode(pinB, OUTPUT);
         pinMode(pinE, OUTPUT);
-        Encoder Enc(pinEncA, pinEncB);
+        //Enc = new Encoder(pinEncA, pinEncB);
     }
     Motor(int MotA, int MotB, int MotE, int EncA, int EncB) {
         pinA = MotA;
@@ -40,7 +40,7 @@ public:
         pinMode(pinA, OUTPUT);
         pinMode(pinB, OUTPUT);
         pinMode(pinE, OUTPUT);
-        Encoder Enc(pinEncA, pinEncB);
+        Enc = new Encoder(pinEncA, pinEncB);
     }
     int  getPinA(void) {return pinA;}
     int  getPinB(void) {return pinB;}
@@ -52,7 +52,7 @@ public:
     int  getStateE(void) {return stateE;}
 
     float readVelocity(void) {
-        tickChange = Enc.readAndReset();
+        tickChange = 0;//Enc->readAndReset();
         velocity = CONVERTVEL * tickChange;
         return velocity;
     }
@@ -108,6 +108,9 @@ public:
         stateB = M.getStateB();
         stateE = M.getStateE();
         return *this;
+    }
+    ~Motor(){
+        delete(Enc);
     }
 };
 

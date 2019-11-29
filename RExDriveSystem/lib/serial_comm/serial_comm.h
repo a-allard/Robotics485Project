@@ -33,7 +33,13 @@ String getSerialMsg(void) {
       message = "";
       return temp;
     } else {
-      message += buffer;
+      if((buffer == '\b') && message.length() > 0)
+      {
+        message.remove(message.length() - 1);
+      }
+      else if (buffer != '\b'){
+        message += buffer;
+      }
       return '0';
     }
 }
