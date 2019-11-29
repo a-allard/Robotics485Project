@@ -4,14 +4,13 @@
 // Allard changed from 140 to 130 11/29/2019
 #define DEADVOLT 130 // PWM value [0:255] that barely turns on the motors
 
-// declare IR reflective sensors
 
+Encoder leftEncoder(16, 17), rightEncoder(23, 22), frontEncoder(20, 21), backEncoder(14, 15);
 
-// declare motors (pinA, pinB, pinE, pinEncA, pinEncB)
-Motor Left(0, 1, 2, 16, 17);
-Motor Right(3, 4, 5, 23, 22);
-Motor Front(6, 7, 8, 20, 21);
-Motor Back(9, 10, 11, 14, 15);
+Motor Left(0, 1, 2);
+Motor Right(3, 4, 5);
+Motor Front(6, 7, 8);
+Motor Back(9, 10, 11);
 
 OmniwheelDriveSys REx(Front, Back, Left, Right);
 IntervalTimer t;
@@ -27,7 +26,7 @@ void followLine(void);
 void getVels(void);
 
 String message;
-float command[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
+float command[4] = {0.0, 0.0, 0.0, 0.0};
 bool cmd_flag = false;
 bool followLineMode = false;
 
@@ -152,12 +151,12 @@ void followLine(void) {
 }
 
 void getVels(){
-  float f = Left.readVelocity();
-  float f1 = Back.readVelocity();
-  float f2 = Front.readVelocity();
-  float f3 = Right.readVelocity();
+  float f = leftEncoder.readAndReset();
+  float f1 = backEncoder.readAndReset();
+  float f2 = frontEncoder.readAndReset();
+  float f3 = rightEncoder.readAndReset();
   char s[100];
   sprintf(s, "left: %f, right %f, front %f, back %f", f, f3, f2, f1);
   //Serial.println(s);
-  Serial.println(millis());
+  //Serial.println(millis());
 }
