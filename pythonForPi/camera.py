@@ -21,11 +21,12 @@ from random import randint
 
 class RExEye(object):
     def __init__(self):
-        self._defaultRes = (400, 640)
+        self._defaultRes = (640, 400)
         self.favoritePersonLocation = None
         self._eyeCam = PiCamera()
         self._eyeCam.resolution = self._defaultRes
         self._eyeCam.color_effects = (128, 128)
+        self._eyeCam.rotation = 180
         self._camImage = PiRGBArray(self._eyeCam)
         self._hog = cv2.HOGDescriptor()
         self._hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
@@ -42,7 +43,7 @@ class RExEye(object):
     def findPeople(self, imageArray=None, drawOnImage=False, useOverLap=True, parseWidth=125):
         if imageArray is None:
             imageArray = self.__captureImage__()
-        if self._lastRects is None:
+        if not self._lastRects is None:
             return (self._lastRects.copy(), self._lastPicks.copy())
         imageArray = imutils.resize(imageArray, width=min(parseWidth, imageArray.shape[1]))
         (rects, widths) = self._hog.detectMultiScale(imageArray, winStride=(12, 12),
@@ -61,7 +62,9 @@ class RExEye(object):
         return (rects, pick)
 
     def findFavoritePerson(self, peopleArray):
-        if not self._favoritePersonLocation:
+        if not self.favoritePersonLocation:
+            if not peopleArray:
+                return -1
             if peopleArray.size == 0:
                 return -1
             self.favoritePersonLocation = randint(0, peopleArray.shape[0])
@@ -70,8 +73,8 @@ class RExEye(object):
         return True
 
     def findFavoritePersonLocation(self, peopleArray):
-        if not self.findFavoritePerson(peopleArray):
-            return None
+        if self.findFavoritePerson(peopleArray) == -1:
+            return (None, None)
         centerX = (self.favoritePersonLocation[2] - self.favoritePersonLocation[0]) / 2 + self.favoritePersonLocation[0]
         centerY = (self.favoritePersonLocation[3] - self.favoritePersonLocation[1]) / 2 + self.favoritePersonLocation[1]
         centerX = (centerX / self._camImage.shape[0] - 0.5) * 2

@@ -33,7 +33,7 @@ class teensy(Serial):
             return port[0]
     def query(self, strout):
         self.write(strout.encode())
-        time.sleep(0.01)
+        time.sleep(0.08)
         return self.read_all().decode()
     def __del__(self):
         self.close()
@@ -41,8 +41,7 @@ class teensy(Serial):
 
 class motorControl(teensy):
     def __init__(self):
-        teensy.__init__(self, '1333910', True)
-        self.write('fco 0'.encode())
+        teensy.__init__(self, '6239680', True)
     def sendMoveCommand(self, velMag, velDirection, rotation):
         """
         Sends a command to the Teensy to change the robots position.
@@ -67,7 +66,7 @@ class motorControl(teensy):
             If the Teensy returned no error
 
         """
-        self.write('vel {0},{1.4f},{2:.4f}'.format(velMag, velDirection, rotation).encode())
+        self.write('vel {0:.0f},{1:.0f},{2:.0f}\r'.format(velMag, velDirection, rotation).encode())
 
         returnedStr = self.read_all().decode()
         if 'err' not in returnedStr.lower():
@@ -78,7 +77,7 @@ class motorControl(teensy):
 
 
     def queryMoveCommand(self):
-        self.write('vel?'.encode())
+        self.write('vel?\r'.encode())
         returned = self.read_all().decode()
         if 'err' in returned:
             self._error = returned
@@ -86,19 +85,19 @@ class motorControl(teensy):
         return np.vectorize(float)(returned.split(' ')[1].split(','))
 
     def enterLineFollow(self):
-        returned = self.query('lfm 1')
+        returned = self.query('lfm 1\r')
         if 'err' in returned:
             self._error = returned
             return int(returned[0])
 
     def exitLineFollow(self):
-        returned = self.query('lfm 0')
+        returned = self.query('lfm 0\r')
         if 'err' in returned:
             self._error = returned
             return int(returned[0])
 
     def queryLineStatus(self):
-        returned = self.query('lfs')
+        returned = self.query('lfs\r')
         if 'err' in returned.lower():
             self._error = returned
             return int(returned[0])
@@ -106,7 +105,7 @@ class motorControl(teensy):
 
 
     def stop(self):
-        self.write('stp'.encode())
+        self.write('stp\r'.encode())
         returned = self.read_all().decode()
         if 'err' in returned:
             self._error = returned
@@ -119,26 +118,26 @@ class motorControl(teensy):
 
 class remoteControl(teensy):
     def __init__(self):
-        teensy.__init__(self, '6239680', True)
-        self.write('fco 0'.encode())
+        teensy.__init__(self, '1333910', True)
+        self.write('fco 0\n'.encode())
 
     def getRemoteCommand(self):
         # CONTROLMODE,VEL,THETA,PHI
         # all values are relative to the forward direction of REx
-        motionControllerMode = self.query('fcs').split(',')
+        motionControllerMode = self.query('fcs\n').split(',')
         return (int(motionControllerMode[0]),
                 float(motionControllerMode[1]),
                 float(motionControllerMode[2]),
                 float(motionControllerMode[4]))
 
     def getControllerMode(self):
-        return int(self.query('bcm'))
+        return int(self.query('bcm\n'))
     def getRemoteVectors(self):
-        controlVector = self.query('vpt').split(',')
+        controlVector = self.query('vpt\n').split(',')
         return (float(controlVector[0]),
                 float(controlVector[1]),
                 float(controlVector[2]))
 
     def __del__(self):
-        self.write('fco 1'.encode())
+        self.write('fco 1\n'.encode())
         super(teensy, self).__del__()
