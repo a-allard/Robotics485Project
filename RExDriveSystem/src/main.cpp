@@ -6,10 +6,16 @@
 
 
 // declare motors (pinA, pinB, pinE)
-Motor Left(0, 1, 2);
+/*Motor Left(0, 1, 2);
 Motor Right(3, 4, 5);
 Motor Front(6, 7, 8);
 Motor Back(9, 10, 11);
+*/
+
+Motor Left(0, 1, 2, 16, 17);
+Motor Right(3, 4, 5, 23, 22);
+Motor Front(6, 7, 8, 20, 21);
+Motor Back(9, 10, 11, 14, 15);
 
 OmniwheelDriveSys REx(Front, Back, Left, Right); 
 
