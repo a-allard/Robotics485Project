@@ -70,8 +70,7 @@ public:
         or the omniwheeldrive class.  That way 1 timer reads all the wheels and keeps things running.
         This is only here to make getting the value out simpler so this will report ticks
         */
-        int32_t value = this->motorEncoder->read();
-        this->motorEncoder->write(0);
+        int32_t value = this->motorEncoder->readAndReset();
         return value;
     }
     int  getPinA(void) {return pinA;}
