@@ -1,6 +1,8 @@
 #include "RExDriveSystem.h"
 
-#define DEADVOLT 140 // PWM value [0:255] that barely turns on the motors
+
+// Allard changed from 140 to 130 11/29/2019
+#define DEADVOLT 130 // PWM value [0:255] that barely turns on the motors
 
 // declare IR reflective sensors
 
@@ -102,7 +104,7 @@ void reportVelocity(void) {
 // x & y exist in range [-100%,100%], and theta from [-pi, pi]
 void setVelocity(float xVel, float yVel, float theta) {
   float speed = 0;
-
+  Serial.println("Setting vel");
   if (xVel > 0) {
     speed = map((int)xVel, 0, 100, DEADVOLT, 255);
     REx.driveRight(speed);

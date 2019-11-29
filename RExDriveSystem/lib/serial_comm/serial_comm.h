@@ -28,7 +28,7 @@ String getSerialMsg(void) {
   //  while(!Serial.available()); // wait until something is sent
     buffer = Serial.read();
     // Serial.print(buffer);
-    if (buffer == '\r') {
+    if (buffer == '\n') {
       temp = message;
       message = "";
       return temp;
@@ -40,6 +40,7 @@ String getSerialMsg(void) {
 
 void parseMsg(float *cmd, String msg) {
   // grab the 1st three characters that define the command
+  msg.trim();
   msg.toUpperCase();
   String command = msg.substring(0, 3); // between characters 0 and 2
   if (0 == command.compareTo("STP")) {

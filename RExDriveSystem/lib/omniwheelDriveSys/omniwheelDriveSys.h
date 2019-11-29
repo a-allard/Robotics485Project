@@ -32,6 +32,8 @@ public:
         linY = speed;
         goalVelL = max(-linY + ang, -255);
         goalVelR = min(linY + ang, 255);
+        //Left.setVelocity(goalVelL);
+        //Right.setVelocity(goalVelR);
         measVelL = Left.readVelocity();
         measVelR = Right.readVelocity();
         setVelL += goalVelL - measVelL*255;

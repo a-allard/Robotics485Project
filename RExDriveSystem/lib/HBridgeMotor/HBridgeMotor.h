@@ -4,9 +4,9 @@
 #include <Arduino.h>
 #include "../Encoder/Encoder.h" 
 
-#define WHEELRADIUS 0.025 // 2.5cm
-#define GEARRATIO   10
-#define TOTALTICKS  2
+#define WHEELRADIUS 0.03 // 2.5cm
+#define GEARRATIO   75
+#define TOTALTICKS  47
 #define CONVERTVEL  (WHEELRADIUS/(GEARRATIO*TOTALTICKS))
 
 class Motor {
