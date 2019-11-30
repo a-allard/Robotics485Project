@@ -6,6 +6,7 @@
 
 
 Encoder leftEncoder(16, 17), rightEncoder(23, 22), frontEncoder(20, 21), backEncoder(14, 15);
+float leftVel = 0, rightVel = 0, frontVel = 0, backVel = 0;
 
 Motor Left(0, 1, 2);
 Motor Right(3, 4, 5);
@@ -24,6 +25,8 @@ void setVelocity(float,float,float);
 void askMsgAgain(void);
 void followLine(void);
 void getVels(void);
+float mapD(float val, float fromA, float fromB, float toA, float toB);
+float toMPS(float ticks);
 
 String message;
 float command[4] = {0.0, 0.0, 0.0, 0.0};
@@ -109,30 +112,31 @@ void setVelocity(float xVel, float yVel, float theta) {
   float speed = 0;
   //Serial.println("Setting vel");
   if (xVel > 0) {
-    speed = map((int)xVel, 0, 100, DEADVOLT, 255);
+    speed = mapD(xVel, 0, 100, 0, 2);
     REx.driveRight(speed);
   } else if (xVel < 0) {
-    speed = map((int)xVel*(-1), 0, 100, DEADVOLT, 255);
+    speed = mapD(xVel*(-1), 0, 100, 0, 2);
     REx.driveLeft(speed);
   } else {
     REx.driveLeft(0);
   }
 
   if (yVel > 0) {
-    speed = map((int)yVel, 0, 100, DEADVOLT, 255);
+    speed = mapD(yVel, 0, 100, 0, 2);
     REx.driveForward(speed);
+    //Serial.println(speed);
   } else if (yVel < 0) {
-    speed = map((int)yVel*(-1), 0, 100, DEADVOLT, 255);
+    speed = mapD(yVel*(-1), 0, 100, 0, 2);
     REx.driveBackward(speed);
   } else {
     REx.driveForward(0);
   }
 
   if (theta > 0) {
-    speed = map(theta, 0, 100, DEADVOLT, 255);
+    speed = mapD(theta, 0, 100, 0, 2);
     REx.rotateCCW(speed);
   } else if (theta < 0) {
-    speed = map(theta*(-1), 0, 100, DEADVOLT, 255);
+    speed = mapD(theta*(-1), 0, 100, 0, 2);
     REx.rotateCW(speed);
   } else {
     REx.rotateCW(0);
@@ -151,12 +155,21 @@ void followLine(void) {
 }
 
 void getVels(){
-  float f = leftEncoder.readAndReset();
-  float f1 = backEncoder.readAndReset();
-  float f2 = frontEncoder.readAndReset();
-  float f3 = rightEncoder.readAndReset();
-  char s[100];
-  sprintf(s, "left: %f, right %f, front %f, back %f", f, f3, f2, f1);
-  //Serial.println(s);
-  //Serial.println(millis());
+  leftVel = toMPS(leftEncoder.readAndReset());
+  backVel = toMPS(backEncoder.readAndReset());
+  frontVel = toMPS(frontEncoder.readAndReset());
+  rightVel = toMPS(rightEncoder.readAndReset());
+  Left.updateVel(leftVel);
+  Right.updateVel(rightVel);
+  Front.updateVel(frontVel);
+  Back.updateVel(backVel);
+}
+
+float toMPS(float ticks){
+  return ticks / 47.0 * 0.1 / 75 * 0.03;
+}
+
+float mapD(float val, float fromA, float fromB, float toA, float toB)
+{
+  return (val - fromA) * (toB - toA) / (fromB - fromA) + toA;
 }

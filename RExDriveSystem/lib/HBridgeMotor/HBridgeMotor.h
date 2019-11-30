@@ -11,65 +11,60 @@
 
 class Motor {
 private:
-    u_int8_t pinA, pinB, pinE, pinEncA=0, pinEncB=1;
+    u_int8_t pinA, pinB, pinE;
     bool stateA=HIGH; 
     bool stateB=HIGH;
     int  stateE=0;
     int tickChange=0;
-    float velocity=0;
+    float setVel=0, measVel = 0;
 public:
     // constructors
     Motor(void) {
         pinA = 0;
         pinB = 1;
         pinE = 2;
-        pinEncA = 11;
-        pinEncB = 12;
         pinMode(pinA, OUTPUT);
         pinMode(pinB, OUTPUT);
         pinMode(pinE, OUTPUT);
     }
-    Motor(int MotA, int MotB, int MotE, int EncA, int EncB) {
+    Motor(int MotA, int MotB, int MotE) {
         pinA = MotA;
         pinB = MotB;
         pinE = MotE;
-        pinEncA = EncA;
-        pinEncB = EncB;
         pinMode(pinA, OUTPUT);
         pinMode(pinB, OUTPUT);
         pinMode(pinE, OUTPUT);
-    }
-    Motor(int MotA, int MotB, int MotE){
-        pinA = 0;
-        pinB = 1;
-        pinE = 2;
-        pinEncA = 11;
-        pinEncB = 12;
-        pinMode(pinA, OUTPUT);
-        pinMode(pinB, OUTPUT);
-        pinMode(pinE, OUTPUT);
-        //Enc = enc;
     }
     int  getPinA(void) {return pinA;}
     int  getPinB(void) {return pinB;}
     int  getPinE(void) {return pinE;}
-    int  getEncA(void) {return pinEncA;}
-    int  getEncB(void) {return pinEncB;}
     bool getStateA(void) {return stateA;}
     bool getStateB(void) {return stateB;}
     int  getStateE(void) {return stateE;}
 
-    float readVelocity(void) {
-        tickChange = 0;
-        velocity = CONVERTVEL * tickChange;
-        return velocity;
+    void updateVel(float measuredVelocity){
+        measVel = measuredVelocity * 75 / 0.03; // motor shaft rotations per second.
+        float diff = this->setVel - measVel;
+        //Serial.println(setVel);
+        setPWM(toPWM((diff)) + stateE);
     }
 
-    void setVelocity(int speed) {
+    int toPWM(float speed){
+        int pwm = 0;
+        pwm = (int)round(speed * 0.5);
+        return pwm;
+    }
+    void setVelocity(float vel){
+        this->setVel = vel * 75 / 0.03;
+        setPWM(toPWM((this->setVel - measVel)) + stateE);
+        //Serial.println(setVel);
+    }
+    void setPWM(int speed) {
+        //Serial.println(this->setVel);
         if (speed > 0) {
-            spinCW(speed);
+            spinCW(min(speed, 255));
         } else if (speed < 0) {
-            spinCCW(-speed);
+            spinCCW(min(-speed, 255));
         } else {
             activeStop();
         }
@@ -94,6 +89,7 @@ public:
         stateA = HIGH;
         stateB = HIGH;
         stateE = 0;
+        this->setVel = 0;
         digitalWrite(pinA, stateA);
         digitalWrite(pinB, stateB);
         analogWrite(pinE, stateE);
@@ -102,6 +98,7 @@ public:
         stateA = HIGH;
         stateB = HIGH;
         stateE = 255;
+        this->setVel = 0;
         digitalWrite(pinA, stateA);
         digitalWrite(pinB, stateB);
         analogWrite(pinE, stateE);
@@ -110,8 +107,6 @@ public:
         pinA = M.getPinA();
         pinB = M.getPinB();
         pinE = M.getPinE();
-        pinEncA = M.getEncA();
-        pinEncB = M.getEncB();
         stateA = M.getStateA();
         stateB = M.getStateB();
         stateE = M.getStateE();
