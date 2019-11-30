@@ -11,109 +11,41 @@
 
 class Motor {
 private:
-    u_int8_t pinA, pinB, pinE;
-    bool stateA=HIGH; 
-    bool stateB=HIGH;
-    int  stateE=0;
-    int tickChange=0;
-    float setVel=0, measVel = 0;
+    uint8_t pinA, pinB, pinE;
+    volatile bool stateA = HIGH; 
+    volatile bool stateB = HIGH;
+    volatile int  stateE;
+    volatile int tickChange = 0;
+    volatile bool cw;
+    volatile float measVel;
+    volatile float setVel = 0;
+    const int minSetVal=1;
+    volatile float speed = 0;
+    bool activeStopOn = true;
 public:
     // constructors
-    Motor(void) {
-        pinA = 0;
-        pinB = 1;
-        pinE = 2;
-        pinMode(pinA, OUTPUT);
-        pinMode(pinB, OUTPUT);
-        pinMode(pinE, OUTPUT);
-    }
-    Motor(int MotA, int MotB, int MotE) {
-        pinA = MotA;
-        pinB = MotB;
-        pinE = MotE;
-        pinMode(pinA, OUTPUT);
-        pinMode(pinB, OUTPUT);
-        pinMode(pinE, OUTPUT);
-    }
-    int  getPinA(void) {return pinA;}
-    int  getPinB(void) {return pinB;}
-    int  getPinE(void) {return pinE;}
-    bool getStateA(void) {return stateA;}
-    bool getStateB(void) {return stateB;}
-    int  getStateE(void) {return stateE;}
+    Motor(void);
+    Motor(int MotA, int MotB, int MotE);
+    int  getPinA(void);
+    int  getPinB(void);
+    int  getPinE(void);
+    bool getStateA(void);
+    bool getStateB(void);
+    int  getStateE(void);
+    float getSetVel(void);
+    float getMeasVel(void);
 
-    void updateVel(float measuredVelocity){
-        measVel = measuredVelocity * 75 / 0.03; // motor shaft rotations per second.
-        float diff = this->setVel - measVel;
-        //Serial.println(setVel);
-        setPWM(toPWM((diff)) + stateE);
-    }
+    void updateVel(float measuredVelocity);
 
-    int toPWM(float speed){
-        int pwm = 0;
-        pwm = (int)round(speed * 0.5);
-        return pwm;
-    }
-    void setVelocity(float vel){
-        this->setVel = vel * 75 / 0.03;
-        setPWM(toPWM((this->setVel - measVel)) + stateE);
-        //Serial.println(setVel);
-    }
-    void setPWM(int speed) {
-        //Serial.println(this->setVel);
-        if (speed > 0) {
-            spinCW(min(speed, 255));
-        } else if (speed < 0) {
-            spinCCW(min(-speed, 255));
-        } else {
-            activeStop();
-        }
-    }
-    void spinCW(int speed) {
-        stateA = HIGH;
-        stateB = LOW;
-        stateE = speed;
-        digitalWrite(pinA, stateA);
-        digitalWrite(pinB, stateB);
-        analogWrite(pinE, stateE);
-    }
-    void spinCCW(int speed) {
-        stateA = LOW;
-        stateB = HIGH;
-        stateE = speed;
-        digitalWrite(pinA, stateA);
-        digitalWrite(pinB, stateB);
-        analogWrite(pinE, stateE);
-    }
-    void activeStop(void) {
-        stateA = HIGH;
-        stateB = HIGH;
-        stateE = 0;
-        this->setVel = 0;
-        digitalWrite(pinA, stateA);
-        digitalWrite(pinB, stateB);
-        analogWrite(pinE, stateE);
-    }
-    void passiveStop(void) {
-        stateA = HIGH;
-        stateB = HIGH;
-        stateE = 255;
-        this->setVel = 0;
-        digitalWrite(pinA, stateA);
-        digitalWrite(pinB, stateB);
-        analogWrite(pinE, stateE);
-    }
-    Motor & operator = (Motor M) {
-        pinA = M.getPinA();
-        pinB = M.getPinB();
-        pinE = M.getPinE();
-        stateA = M.getStateA();
-        stateB = M.getStateB();
-        stateE = M.getStateE();
-        return *this;
-    }
-    ~Motor(){
-    }
+    int toPWM(float speed);
+    void setVelocity(float vel);
+    void setPWM(int speed);
+    void spinCW(int speed);
+    void spinCCW(int speed);
+    void activeStop(void);
+    void passiveStop(void);
+    Motor& operator = (const Motor &);
+    ~Motor();
 };
 
 #endif 

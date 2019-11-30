@@ -5,15 +5,23 @@
 #define DEADVOLT 130 // PWM value [0:255] that barely turns on the motors
 
 
-Encoder leftEncoder(16, 17), rightEncoder(23, 22), frontEncoder(20, 21), backEncoder(14, 15);
-float leftVel = 0, rightVel = 0, frontVel = 0, backVel = 0;
-
+//Encoder leftEncoder(16, 17), rightEncoder(23, 22), frontEncoder(20, 21), backEncoder(14, 15);
+//Encoder backEncoder(16, 17), frontEncoder(23, 22), rightEncoder(20, 21), leftEncoder(14, 15);
+Encoder frontEncoder(16, 17), backEncoder(23, 22), leftEncoder(20, 21), rightEncoder(14, 15);
+volatile float leftVel = 0, rightVel = 0, frontVel = 0, backVel = 0;
+/*
 Motor Left(0, 1, 2);
 Motor Right(3, 4, 5);
 Motor Front(6, 7, 8);
 Motor Back(9, 10, 11);
+*/
 
-OmniwheelDriveSys REx(Front, Back, Left, Right);
+Motor Right(0, 1, 2);
+Motor Left(3, 4, 5);
+Motor Back(6, 7, 8);
+Motor Front(9, 10, 11);
+
+OmniwheelDriveSys REx(&Front, &Back, &Left, &Right);
 IntervalTimer t;
 
 // function prototypes
@@ -32,12 +40,13 @@ String message;
 float command[4] = {0.0, 0.0, 0.0, 0.0};
 bool cmd_flag = false;
 bool followLineMode = false;
+const float RExVELHIGH = 0.3;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   //Serial.println("My name is REx. Hear me ROAR!\n");
-  t.begin(getVels, 100000);
+  t.begin(getVels, 10000);
 }
 
 void loop() {
@@ -112,36 +121,36 @@ void setVelocity(float xVel, float yVel, float theta) {
   float speed = 0;
   //Serial.println("Setting vel");
   if (xVel > 0) {
-    speed = mapD(xVel, 0, 100, 0, 2);
+    speed = mapD(xVel, 0.0, 100.0, 0.0, RExVELHIGH);
     REx.driveRight(speed);
   } else if (xVel < 0) {
-    speed = mapD(xVel*(-1), 0, 100, 0, 2);
+    speed = mapD(xVel*(-1), 0.0, 100.0, 0.0, RExVELHIGH);
     REx.driveLeft(speed);
   } else {
     REx.driveLeft(0);
   }
 
   if (yVel > 0) {
-    speed = mapD(yVel, 0, 100, 0, 2);
+    speed = mapD(yVel, 0.0, 100.0, 0.0, RExVELHIGH);
     REx.driveForward(speed);
     //Serial.println(speed);
   } else if (yVel < 0) {
-    speed = mapD(yVel*(-1), 0, 100, 0, 2);
+    speed = mapD(yVel*(-1), 0, 100, 0, RExVELHIGH);
     REx.driveBackward(speed);
   } else {
     REx.driveForward(0);
   }
+  //Serial.println(speed, 12);
 
   if (theta > 0) {
-    speed = mapD(theta, 0, 100, 0, 2);
+    speed = mapD(theta, 0, 100, 0, RExVELHIGH);
     REx.rotateCCW(speed);
   } else if (theta < 0) {
-    speed = mapD(theta*(-1), 0, 100, 0, 2);
+    speed = mapD(theta*(-1), 0, 100, 0, RExVELHIGH);
     REx.rotateCW(speed);
   } else {
     REx.rotateCW(0);
   }
-
   Serial.println("0");
 }
 
@@ -155,10 +164,10 @@ void followLine(void) {
 }
 
 void getVels(){
-  leftVel = toMPS(leftEncoder.readAndReset());
-  backVel = toMPS(backEncoder.readAndReset());
-  frontVel = toMPS(frontEncoder.readAndReset());
-  rightVel = toMPS(rightEncoder.readAndReset());
+  leftVel = toMPS((float)leftEncoder.readAndReset());
+  backVel = toMPS((float)backEncoder.readAndReset());
+  frontVel = toMPS((float)frontEncoder.readAndReset());
+  rightVel = toMPS((float)rightEncoder.readAndReset());
   Left.updateVel(leftVel);
   Right.updateVel(rightVel);
   Front.updateVel(frontVel);
@@ -166,7 +175,7 @@ void getVels(){
 }
 
 float toMPS(float ticks){
-  return ticks / 47.0 * 0.1 / 75 * 0.03;
+  return ticks / 12.0 / 0.01 / 75 *0.03;
 }
 
 float mapD(float val, float fromA, float fromB, float toA, float toB)
