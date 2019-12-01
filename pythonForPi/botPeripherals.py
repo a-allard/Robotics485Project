@@ -66,7 +66,8 @@ class motorControl(teensy):
             If the Teensy returned no error
 
         """
-        self.write('vel {0:.0f},{1:.0f},{2:.0f}\r'.format(velMag, velDirection, rotation).encode())
+        self.write('vel {0:.0f},{1:.0f},{2:.0f}\n'.format(velMag, velDirection, rotation).encode())
+        #print('vel {0:.0f},{1:.0f},{2:.0f}'.format(velMag, velDirection, rotation))
 
         returnedStr = self.read_all().decode()
         if 'err' not in returnedStr.lower():
@@ -77,7 +78,7 @@ class motorControl(teensy):
 
 
     def queryMoveCommand(self):
-        self.write('vel?\r'.encode())
+        self.write('vel?\n'.encode())
         returned = self.read_all().decode()
         if 'err' in returned:
             self._error = returned
@@ -85,19 +86,19 @@ class motorControl(teensy):
         return np.vectorize(float)(returned.split(' ')[1].split(','))
 
     def enterLineFollow(self):
-        returned = self.query('lfm 1\r')
+        returned = self.query('lfm 1\n')
         if 'err' in returned:
             self._error = returned
             return int(returned[0])
 
     def exitLineFollow(self):
-        returned = self.query('lfm 0\r')
+        returned = self.query('lfm 0\n')
         if 'err' in returned:
             self._error = returned
             return int(returned[0])
 
     def queryLineStatus(self):
-        returned = self.query('lfs\r')
+        returned = self.query('lfs\n')
         if 'err' in returned.lower():
             self._error = returned
             return int(returned[0])
@@ -105,7 +106,7 @@ class motorControl(teensy):
 
 
     def stop(self):
-        self.write('stp\r'.encode())
+        self.write('stp\n'.encode())
         returned = self.read_all().decode()
         if 'err' in returned:
             self._error = returned
@@ -126,17 +127,17 @@ class remoteControl(teensy):
         # all values are relative to the forward direction of REx
         motionControllerMode = self.query('fcs\n').split(',')
         return (int(motionControllerMode[0]),
-                float(motionControllerMode[1]),
-                float(motionControllerMode[2]),
-                float(motionControllerMode[4]))
+                float(motionControllerMode[1]) - 2.5,
+                float(motionControllerMode[2]) - 2.5,
+                (float(motionControllerMode[4]) - 2.5)  * -1)
 
     def getControllerMode(self):
         return int(self.query('bcm\n'))
     def getRemoteVectors(self):
         controlVector = self.query('vpt\n').split(',')
-        return (float(controlVector[0]),
-                float(controlVector[1]),
-                float(controlVector[2]))
+        return (float(controlVector[0]) - 2.5,
+                float(controlVector[1]) - 2.5,
+                (float(controlVector[2]) - 2.5) * -1)
 
     def __del__(self):
         self.write('fco 1\n'.encode())

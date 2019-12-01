@@ -21,7 +21,7 @@ from random import randint
 
 class RExEye(object):
     def __init__(self):
-        self._defaultRes = (640, 400)
+        self._defaultRes = (1280, 400)
         self.favoritePersonLocation = None
         self._eyeCam = PiCamera()
         self._eyeCam.resolution = self._defaultRes
