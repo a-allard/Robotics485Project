@@ -23,6 +23,7 @@ class teensy(Serial):
         ports = comports()
         Serial.__init__(self, self.__findTeensy__(ports), 115200)
         self.timeout = 0.01
+        crap = self.read_all()
     def __findTeensy__(self, ports):
         if not self._TEENSY_DESCRIPTION:
             port = ports[0].device

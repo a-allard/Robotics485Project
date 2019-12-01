@@ -63,6 +63,7 @@ def lineFollow():
     yOffset = 0
     angle = np.array([2,2])
     lastGoodAngle = angle.copy()
+    farEnd = 0
     while remote.getControllerMode() == 1:
         img = cam.__captureImage__()
         img2 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -76,6 +77,17 @@ def lineFollow():
             # finding center of line in bottom of image:
             centerOfLine = contoursAtBottom[0][contoursAtBottom[0][:,0,1]==(img.shape[0] - 1), 0, :][:,0].mean()
             bottomCorners = np.where(contoursAtBottom[0][:,0,1]==(img.shape[0] - 1))[0].min(), np.where(contoursAtBottom[0][:,0,1]== (img.shape[0] - 1))[0].max()
+            
+            farEnd = np.where(contoursAtBottom[0][:,0,0]==(img.shape[1] - 1))[0]
+            if farEnd.size == 0:
+                farEnd = np.where(contoursAtBottom[0][:,0,0]==(0))[0]
+                if farEnd.size == 0:
+                    farEnd = np.where(contoursAtBottom[0][:,0,1]==(img.shape[0] - 1))[0].max() - img.shape[1] / 2
+                    
+                else:
+                    farEnd = farEnd.min()
+            else:
+                farEnd = farEnd.max()
 
             leftSide = np.diff(img2.shape - contoursAtBottom[0][bottomCorners[0] - 75: bottomCorners[0], 0, :], axis=0)
             rightSide = np.diff(img2.shape - contoursAtBottom[0][bottomCorners[1]: bottomCorners[1] + 75, 0, :], axis=0)
@@ -93,34 +105,36 @@ def lineFollow():
             cv2.imshow('test', cv2.line(imgFinal, (int(round(centerOfLine-10)), (img.shape[0] - 1)), (int(round(centerOfLine-10)), 400), (255, 0, 0), 2))
             xOffset = (centerOfLine / img.shape[1] - 0.5) * 2 * 10
             if xOffset < 0:
-                if xOffset < -6:
-                    xOffset = -6
+                if xOffset < -5:
+                    xOffset = -5
             else:
-                if xOffset > 6:
-                    xOffset = 6
-            phiOffset = np.interp(-angle.mean(), (-np.pi, np.pi), (-10, 10))
+                if xOffset > 5:
+                    xOffset = 5
+            phiOffset = np.interp(-angle.mean(), (-np.pi, np.pi), (-5, 5))
             yOffset = 0
             print('X: {0} Phi: {1}'.format(xOffset, phiOffset))
         else:
             xOffset = 0
             try:
-                myPhi = np.diff(lastGoodAngle).mean()
-                if myPhi > 0:
-                    phiOffset = -3
+                myPhi = -np.diff(lastGoodAngle).mean()
+                if farEnd > (img.shape[1] / 2):
+                    phiOffset = 1.5
+                    xOffset = -2.0
                 else:
-                    phiOffset = 3
-                print(np.diff(lastGoodAngle).mean())
+                    phiOffset = -1.5
+                    xOffset = 2.0
+                print(farEnd)
             except:
-                phiOffset = 2
+                phiOffset = 1.5
                 print("bad Angles");
             yOffset = -.3
             cv2.imshow('test', img)
         if phiOffset < 0:
-            if phiOffset < -5.5:
-                phiOffset = -5.5
+            if phiOffset < -3:
+                phiOffset = -3
         else:
-            if phiOffset > 5.5:
-                phiOffset = 5.5
+            if phiOffset > 3:
+                phiOffset = 3
         cv2.waitKey(1)
         x, y, phi = remote.getRemoteVectors()
         if abs(x) < 1:
@@ -132,7 +146,7 @@ def lineFollow():
         x += xOffset
         phi -= phiOffset
         y += 1.5 + yOffset
-        motors.sendMoveCommand(x/2, y, phi/2)
+        motors.sendMoveCommand(x, y, phi)
         print('X: {0:.2f} Phi: {1:.2f}...Actual: X: {2:.2f}, Y: {3:.2f}, PHI: {4:.2f}'.format(xOffset, phiOffset, x, y, phi))
     time.sleep(1)
 
