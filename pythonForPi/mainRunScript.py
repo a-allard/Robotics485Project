@@ -32,6 +32,8 @@ def findObsticles(imgForObsticles, imgToDrawOn=None):
     diffGain = 65
     threshold = 120
     ObsticleContourMinSize = 10
+    if imgToDrawOn is None:
+        imgToDrawOn = imgForObsticles.copy()
     diff = abs(np.diff(np.float64(cv2.blur(imgForObsticles,
                                            (blurX, blurY))), 1, 0))
     difference = cv2.threshold(np.uint8(diff*diffGain),
@@ -49,11 +51,8 @@ def findObsticles(imgForObsticles, imgToDrawOn=None):
     else:
         maxs = np.array([1, 1])
         mins = np.array([0, 0])
-    if imgToDrawOn is None:
-        imgToDrawOn = imgForObsticles.copy()
     imgContours = cv2.drawContours(imgToDrawOn, obsticleContoursFilt, -1, (0, 220, 250), 2)
     imgContours = cv2.rectangle(imgContours, (mins[0], mins[1]), (maxs[0], maxs[1]), (255, 0, 0), 1)
-
     return (maxs, mins, imgContours)
 
 
@@ -67,27 +66,30 @@ def lineFollow():
     while remote.getControllerMode() == 1:
         img = cam.__captureImage__()
         img2 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        ObsticlesMax, ObsticlesMin, obsticlesMarked = findObsticles(img2, img)
+        #ObsticlesMax, ObsticlesMin, obsticlesMarked = findObsticles(img2, img)
         img3 = cv2.morphologyEx(img2, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
         ret, img3 = cv2.threshold(img3, 80, 255, cv2.THRESH_BINARY_INV)
         im2, contours, hierarchy = cv2.findContours(img3, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         contoursAtBottom = [c for c in contours if c[:, 0, 1].max() == (img.shape[0] - 1)]
-        imgContours = cv2.drawContours(obsticlesMarked, contoursAtBottom, -1, (0, 255, 0), 3)
+        #imgContours = cv2.drawContours(obsticlesMarked, contoursAtBottom, -1, (0, 255, 0), 3)
+        imgContours = cv2.drawContours(img, contoursAtBottom, -1, (0, 255, 0), 3)
         if len(contoursAtBottom) > 0:
             # finding center of line in bottom of image:
             centerOfLine = contoursAtBottom[0][contoursAtBottom[0][:,0,1]==(img.shape[0] - 1), 0, :][:,0].mean()
             bottomCorners = np.where(contoursAtBottom[0][:,0,1]==(img.shape[0] - 1))[0].min(), np.where(contoursAtBottom[0][:,0,1]== (img.shape[0] - 1))[0].max()
-            
-            farEnd = np.where(contoursAtBottom[0][:,0,0]==(img.shape[1] - 1))[0]
-            if farEnd.size == 0:
-                farEnd = np.where(contoursAtBottom[0][:,0,0]==(0))[0]
-                if farEnd.size == 0:
-                    farEnd = np.where(contoursAtBottom[0][:,0,1]==(img.shape[0] - 1))[0].max() - img.shape[1] / 2
-                    
+            if contoursAtBottom[0][:,0,1].min() < (img.shape[0] - 40):
+                farEndTemp = np.where(contoursAtBottom[0][:,0,0]==(img.shape[1] - 1))[0]
+                if farEndTemp.size == 0:
+                    farEndTemp = np.where(contoursAtBottom[0][:,0,0] == 0)[0]
+                    if farEndTemp.size == 0:
+                        print("far end not updated")
+                        pass
+                        #farEnd = np.where(contoursAtBottom[0][:,0,1]==(img.shape[0] - 1))[0].max() - img.shape[1] / 2
+                        
+                    else:
+                        farEnd = -1
                 else:
-                    farEnd = farEnd.min()
-            else:
-                farEnd = farEnd.max()
+                    farEnd = 1
 
             leftSide = np.diff(img2.shape - contoursAtBottom[0][bottomCorners[0] - 75: bottomCorners[0], 0, :], axis=0)
             rightSide = np.diff(img2.shape - contoursAtBottom[0][bottomCorners[1]: bottomCorners[1] + 75, 0, :], axis=0)
@@ -95,46 +97,38 @@ def lineFollow():
                 newAngle = (np.arctan(leftSide[:, 0] / leftSide[:, 1]) + np.arctan(rightSide[:, 0] / rightSide[:, 1])) / 2
                 lastGoodAngle = angle.copy()
                 angle = newAngle.copy()
-            except:
-                angle = np.array([0, 0])
-            try:
                 imgFinal = cv2.arrowedLine(imgContours, (int(round(centerOfLine)), img.shape[0] - 10), (int(round(centerOfLine + 50 * np.sin(angle.mean() - np.pi))), int(round(img.shape[0] - 1 + 50 * np.cos(angle.mean() - np.pi)))), (0, 0, 255), 2)
             except:
+                angle = np.array([0, 0])
                 imgFinal = imgContours
-
-            cv2.imshow('test', cv2.line(imgFinal, (int(round(centerOfLine-10)), (img.shape[0] - 1)), (int(round(centerOfLine-10)), 400), (255, 0, 0), 2))
-            xOffset = (centerOfLine / img.shape[1] - 0.5) * 2 * 10
+            cv2.imshow('test', imgFinal)
+            xOffset = (centerOfLine / img.shape[1] - 0.5) * 14
             if xOffset < 0:
-                if xOffset < -5:
-                    xOffset = -5
+                if xOffset < -4.5:
+                    xOffset = -4.5
             else:
-                if xOffset > 5:
-                    xOffset = 5
-            phiOffset = np.interp(-angle.mean(), (-np.pi, np.pi), (-5, 5))
+                if xOffset > 4.5:
+                    xOffset = 4.5
+            phiOffset = np.interp(-angle.mean(), (-np.pi, np.pi), (-7, 7))
             yOffset = 0
             print('X: {0} Phi: {1}'.format(xOffset, phiOffset))
         else:
             xOffset = 0
-            try:
-                myPhi = -np.diff(lastGoodAngle).mean()
-                if farEnd > (img.shape[1] / 2):
-                    phiOffset = 1.5
-                    xOffset = -2.0
-                else:
-                    phiOffset = -1.5
-                    xOffset = 2.0
-                print(farEnd)
-            except:
-                phiOffset = 1.5
-                print("bad Angles");
-            yOffset = -.3
+            if farEnd > 0:
+                phiOffset = 2.0
+                xOffset = -1.4
+            else:
+                phiOffset = -2.0
+                xOffset = 1.4
+            print(farEnd)
+            #yOffset = -.1
             cv2.imshow('test', img)
         if phiOffset < 0:
-            if phiOffset < -3:
-                phiOffset = -3
+            if phiOffset < -1.6:
+                phiOffset = -1.6
         else:
-            if phiOffset > 3:
-                phiOffset = 3
+            if phiOffset > 1.6:
+                phiOffset = 1.6
         cv2.waitKey(1)
         x, y, phi = remote.getRemoteVectors()
         if abs(x) < 1:
@@ -145,7 +139,13 @@ def lineFollow():
             phi = 0
         x += xOffset
         phi -= phiOffset
-        y += 1.5 + yOffset
+        if len(contoursAtBottom) > 0:
+            if contoursAtBottom[0][:,0,1].min() < (img.shape[0] - 40):
+                y += 2 + yOffset
+            else:
+                y += yOffset + 0.5
+        else:
+            y += yOffset
         motors.sendMoveCommand(x, y, phi)
         print('X: {0:.2f} Phi: {1:.2f}...Actual: X: {2:.2f}, Y: {3:.2f}, PHI: {4:.2f}'.format(xOffset, phiOffset, x, y, phi))
     time.sleep(1)

@@ -21,12 +21,13 @@ from random import randint
 
 class RExEye(object):
     def __init__(self):
-        self._defaultRes = (1280, 400)
+        self._defaultRes = (1280, 480)
         self.favoritePersonLocation = None
         self._eyeCam = PiCamera()
         self._eyeCam.resolution = self._defaultRes
         self._eyeCam.color_effects = (128, 128)
         self._eyeCam.rotation = 180
+        self._eyeCam.framerate = 30
         self._camImage = PiRGBArray(self._eyeCam)
         self._hog = cv2.HOGDescriptor()
         self._hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
