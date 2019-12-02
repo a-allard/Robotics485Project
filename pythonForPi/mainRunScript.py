@@ -83,6 +83,7 @@ def lineFollow():
     farEnd = 0
     while remote.getControllerMode() == 1:
         img = cam.__captureImage__()
+        imgFinal = img.copy()
         img2 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         #ObsticlesMax, ObsticlesMin, obsticlesMarked = findObsticles(img2, img)
         img3 = cv2.morphologyEx(img2, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
@@ -92,19 +93,16 @@ def lineFollow():
         #imgContours = cv2.drawContours(obsticlesMarked, contoursAtBottom, -1, (0, 255, 0), 3)
         imgContours = cv2.drawContours(img, contoursAtBottom, -1, (0, 255, 0), 3)
         if len(contoursAtBottom) > 0:
-            if contoursAtBottom[0].min() < (img.shape[0] - 40):
+            if contoursAtBottom[0].min() < (img.shape[0] - 80):
                 # finding center of line in bottom of image:
                 centerOfLine = contoursAtBottom[0][contoursAtBottom[0][:,0,1]==(img.shape[0] - 1), 0, :][:,0].mean()
                 bottomCorners = np.where(contoursAtBottom[0][:,0,1]==(img.shape[0] - 1))[0].min(), np.where(contoursAtBottom[0][:,0,1]== (img.shape[0] - 1))[0].max()
                 if contoursAtBottom[0][:,0,1].min() < (img.shape[0] - 80):
-                    farEndTemp = np.where(contoursAtBottom[0][:,0,0]>=(img.shape[1] - 200))[0]
+                    farEndTemp = np.where(contoursAtBottom[0][:,0,0]>=(img.shape[1] - 100))[0]
                     if farEndTemp.size == 0:
-                        farEndTemp = np.where(contoursAtBottom[0][:,0,0] >= 200)[0]
+                        farEndTemp = np.where(contoursAtBottom[0][:,0,0] >= 100)[0]
                         if farEndTemp.size == 0:
                             print("far end not updated")
-                            pass
-                            #farEnd = np.where(contoursAtBottom[0][:,0,1]==(img.shape[0] - 1))[0].max() - img.shape[1] / 2
-
                         else:
                             farEnd = -1
                     else:
@@ -120,7 +118,7 @@ def lineFollow():
                 except:
                     angle = np.array([0, 0])
                     imgFinal = imgContours
-                cv2.imshow('test', imgFinal)
+                #cv2.imshow('test', imgFinal)
                 xOffset = (centerOfLine / img.shape[1] - 0.5) * 15
                 if xOffset < 0:
                     if xOffset < -4.5:
@@ -148,8 +146,8 @@ def lineFollow():
                     xOffset = 1.5
                 print(farEnd)
 
-        cv2.imshow('test', img)
-        cv2.waitKey(1)
+        cv2.imshow('test', imgFinal)
+        cv2.waitKey(2)
         x, y, phi = remote.getRemoteVectors()
         if abs(x) < 1:
             x = 0
@@ -163,7 +161,7 @@ def lineFollow():
             if contoursAtBottom[0][:,0,1].min() < (img.shape[0] - 40):
                 y += 4 + yOffset
             else:
-                y += yOffset + 0.5
+                y += yOffset + 0.75
         else:
             y += yOffset
         motors.sendMoveCommand(x, y, phi)
