@@ -44,11 +44,14 @@ class RExEye(object):
     def findPeople(self, imageArray=None, drawOnImage=False, useOverLap=True, parseWidth=125):
         if imageArray is None:
             imageArray = self.__captureImage__()
-        if not self._lastRects is None:
+        if not (self._lastRects is None):
             return (self._lastRects.copy(), self._lastPicks.copy())
-        imageArray = imutils.resize(imageArray, width=min(parseWidth, imageArray.shape[1]))
-        (rects, widths) = self._hog.detectMultiScale(imageArray, winStride=(12, 12),
+        
+        imageArrayNew = imutils.resize(imageArray, width=min(parseWidth, imageArray.shape[1]))
+        print("made it into function")
+        (rects, widths) = self._hog.detectMultiScale(imageArrayNew, winStride=(12, 12),
                                                      padding=(15, 15), scale=1.09)
+        print("Using HOG")
         rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
         if useOverLap:
             pick = non_max_suppression(rects, probs=None, overlapThresh=0.5)
@@ -58,8 +61,8 @@ class RExEye(object):
         self._lastPicks = pick.copy()
         if drawOnImage:
             for (xA, yA, xB, yB) in pick:
-                cv2.rectangle(imageArray, (xA, yA), (xB, yB), (0, 255, 0), 2)
-            return (rects, pick, imageArray)
+                cv2.rectangle(imageArrayNew, (xA, yA), (xB, yB), (0, 255, 0), 2)
+            return (rects, pick, imageArrayNew)
         return (rects, pick)
 
     def findFavoritePerson(self, peopleArray):

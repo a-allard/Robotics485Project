@@ -24,6 +24,9 @@ def fullRemoteDrive():
             phi = 0
         motors.sendMoveCommand(x, y, phi)
         time.sleep(0.1)
+        img = cam.__captureImage__()
+        cv2.imshow('test', img)
+        cv2.waitKey(1)
     motors.stop()
 
 def findObsticles(imgForObsticles, imgToDrawOn=None):
@@ -57,16 +60,18 @@ def findObsticles(imgForObsticles, imgToDrawOn=None):
 
 
 def avoidObstacle():
-    x = 3
-    y = 3
+    print("Avoiding an obstable!!!")
+    x = 5
+    y = 5
     motors.sendMoveCommand(0, 0, 0)
     motors.sendMoveCommand(x, 0, 0)
-    time.sleep(1)
+    time.sleep(2)
     motors.sendMoveCommand(0, y, 0)
-    time.sleep(1)
+    time.sleep(6)
     motors.sendMoveCommand(-x, 0, 0)
-    time.sleep(1)
+    time.sleep(2)
     motors.sendMoveCommand(0, 0, 0)
+    time.sleep(1)
 
 
 def lineFollow():
@@ -87,61 +92,64 @@ def lineFollow():
         #imgContours = cv2.drawContours(obsticlesMarked, contoursAtBottom, -1, (0, 255, 0), 3)
         imgContours = cv2.drawContours(img, contoursAtBottom, -1, (0, 255, 0), 3)
         if len(contoursAtBottom) > 0:
-            # finding center of line in bottom of image:
-            centerOfLine = contoursAtBottom[0][contoursAtBottom[0][:,0,1]==(img.shape[0] - 1), 0, :][:,0].mean()
-            bottomCorners = np.where(contoursAtBottom[0][:,0,1]==(img.shape[0] - 1))[0].min(), np.where(contoursAtBottom[0][:,0,1]== (img.shape[0] - 1))[0].max()
-            if contoursAtBottom[0][:,0,1].min() < (img.shape[0] - 40):
-                farEndTemp = np.where(contoursAtBottom[0][:,0,0]==(img.shape[1] - 1))[0]
-                if farEndTemp.size == 0:
-                    farEndTemp = np.where(contoursAtBottom[0][:,0,0] == 0)[0]
+            if contoursAtBottom[0].min() < (img.shape[0] - 80):
+                # finding center of line in bottom of image:
+                centerOfLine = contoursAtBottom[0][contoursAtBottom[0][:,0,1]==(img.shape[0] - 1), 0, :][:,0].mean()
+                bottomCorners = np.where(contoursAtBottom[0][:,0,1]==(img.shape[0] - 1))[0].min(), np.where(contoursAtBottom[0][:,0,1]== (img.shape[0] - 1))[0].max()
+                if contoursAtBottom[0][:,0,1].min() < (img.shape[0] - 40):
+                    farEndTemp = np.where(contoursAtBottom[0][:,0,0]>=(img.shape[1] - 300))[0]
                     if farEndTemp.size == 0:
-                        print("far end not updated")
-                        pass
-                        #farEnd = np.where(contoursAtBottom[0][:,0,1]==(img.shape[0] - 1))[0].max() - img.shape[1] / 2
+                        farEndTemp = np.where(contoursAtBottom[0][:,0,0] >= 300)[0]
+                        if farEndTemp.size == 0:
+                            print("far end not updated")
+                            pass
+                            #farEnd = np.where(contoursAtBottom[0][:,0,1]==(img.shape[0] - 1))[0].max() - img.shape[1] / 2
 
+                        else:
+                            farEnd = -1
                     else:
-                        farEnd = -1
-                else:
-                    farEnd = 1
+                        farEnd = 1
 
-            leftSide = np.diff(img2.shape - contoursAtBottom[0][bottomCorners[0] - 75: bottomCorners[0], 0, :], axis=0)
-            rightSide = np.diff(img2.shape - contoursAtBottom[0][bottomCorners[1]: bottomCorners[1] + 75, 0, :], axis=0)
-            try:
-                newAngle = (np.arctan(leftSide[:, 0] / leftSide[:, 1]) + np.arctan(rightSide[:, 0] / rightSide[:, 1])) / 2
-                lastGoodAngle = angle.copy()
-                angle = newAngle.copy()
-                imgFinal = cv2.arrowedLine(imgContours, (int(round(centerOfLine)), img.shape[0] - 10), (int(round(centerOfLine + 50 * np.sin(angle.mean() - np.pi))), int(round(img.shape[0] - 1 + 50 * np.cos(angle.mean() - np.pi)))), (0, 0, 255), 2)
-            except:
-                angle = np.array([0, 0])
-                imgFinal = imgContours
-            cv2.imshow('test', imgFinal)
-            xOffset = (centerOfLine / img.shape[1] - 0.5) * 14
-            if xOffset < 0:
-                if xOffset < -4.5:
-                    xOffset = -4.5
+                leftSide = np.diff(img2.shape - contoursAtBottom[0][bottomCorners[0] - 75: bottomCorners[0], 0, :], axis=0)
+                rightSide = np.diff(img2.shape - contoursAtBottom[0][bottomCorners[1]: bottomCorners[1] + 75, 0, :], axis=0)
+                try:
+                    newAngle = (np.arctan(leftSide[:, 0] / leftSide[:, 1]) + np.arctan(rightSide[:, 0] / rightSide[:, 1])) / 2
+                    lastGoodAngle = angle.copy()
+                    angle = newAngle.copy()
+                    imgFinal = cv2.arrowedLine(imgContours, (int(round(centerOfLine)), img.shape[0] - 10), (int(round(centerOfLine + 50 * np.sin(angle.mean() - np.pi))), int(round(img.shape[0] - 1 + 50 * np.cos(angle.mean() - np.pi)))), (0, 0, 255), 2)
+                except:
+                    angle = np.array([0, 0])
+                    imgFinal = imgContours
+                cv2.imshow('test', imgFinal)
+                xOffset = (centerOfLine / img.shape[1] - 0.5) * 14
+                if xOffset < 0:
+                    if xOffset < -4.5:
+                        xOffset = -4.5
+                else:
+                    if xOffset > 4.5:
+                        xOffset = 4.5
+                phiOffset = np.interp(-angle.mean(), (-np.pi, np.pi), (-9, 9))
+                yOffset = 0
+                print('X: {0} Phi: {1}'.format(xOffset, phiOffset))
+                #if :
+                 #   avoidObstacle()
             else:
-                if xOffset > 4.5:
-                    xOffset = 4.5
-            phiOffset = np.interp(-angle.mean(), (-np.pi, np.pi), (-7, 7))
-            yOffset = 0
-            print('X: {0} Phi: {1}'.format(xOffset, phiOffset))
-        else:
-            xOffset = 0
-            if farEnd > 0:
-                phiOffset = 2.0
-                xOffset = -1.4
-            else:
-                phiOffset = -2.0
-                xOffset = 1.4
-            print(farEnd)
-            #yOffset = -.1
-            cv2.imshow('test', img)
+                xOffset = 0
+                if farEnd > 0:
+                    phiOffset = 2.0
+                    xOffset = -1.4
+                else:
+                    phiOffset = -2.0
+                    xOffset = 1.4
+                print(farEnd)
+                #yOffset = -.1
+        cv2.imshow('test', img)
         if phiOffset < 0:
-            if phiOffset < -1.6:
-                phiOffset = -1.6
+            if phiOffset < -2.2:
+                phiOffset = -2.2
         else:
-            if phiOffset > 1.6:
-                phiOffset = 1.6
+            if phiOffset > 2.2:
+                phiOffset = 2.2
         cv2.waitKey(1)
         x, y, phi = remote.getRemoteVectors()
         if abs(x) < 1:
@@ -154,14 +162,12 @@ def lineFollow():
         phi -= phiOffset
         if len(contoursAtBottom) > 0:
             if contoursAtBottom[0][:,0,1].min() < (img.shape[0] - 40):
-                y += 2 + yOffset
+                y += 4 + yOffset
             else:
                 y += yOffset + 0.5
         else:
             y += yOffset
         motors.sendMoveCommand(x, y, phi)
-        if np.diff(contoursAtBottom[0][bottomCorners[0] - 100: bottomCorners[0]: 3, 0, 0]).max() > 2:
-            avoidObstacle()
         print('X: {0:.2f} Phi: {1:.2f}...Actual: X: {2:.2f}, Y: {3:.2f}, PHI: {4:.2f}'.format(xOffset, phiOffset, x, y, phi))
     time.sleep(1)
 
@@ -174,11 +180,16 @@ def main():
             fullRemoteDrive()
         if remote.getControllerMode() == 1:
             lineFollow()
-        unFilteredPeople, filteredPeople = cam.findPeople()
-        x,y = cam.findFavoritePersonLocation(filteredPeople)
-        if not x == None:
-            v,th,ph = remote.getRemoteVectors()
-            motors.sendMoveCommand(v, th, x * np.pi / 3)
+        else:
+            img = cam.__captureImage__()
+            unFilteredPeople, filteredPeople, peopleImg = cam.findPeople(img, True)
+            print("found people")
+            x, y = cam.findFavoritePersonLocation(filteredPeople)
+            cv2.imshow('test', peopleImg)
+            cv2.waitKey(1)
+            if not x == None:
+                v,th,ph = remote.getRemoteVectors()
+                motors.sendMoveCommand(v, th, x * np.pi / 3)
 
 
 
