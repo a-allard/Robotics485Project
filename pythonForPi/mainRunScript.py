@@ -97,10 +97,10 @@ def lineFollow():
                 # finding center of line in bottom of image:
                 centerOfLine = contoursAtBottom[0][contoursAtBottom[0][:,0,1]==(img.shape[0] - 1), 0, :][:,0].mean()
                 bottomCorners = np.where(contoursAtBottom[0][:,0,1]==(img.shape[0] - 1))[0].min(), np.where(contoursAtBottom[0][:,0,1]== (img.shape[0] - 1))[0].max()
-                if contoursAtBottom[0][:,0,1].min() < (img.shape[0] - 80):
-                    farEndTemp = np.where(contoursAtBottom[0][:,0,0]>=(img.shape[1] - 100))[0]
+                if contoursAtBottom[0][:,0,1].min() < (img.shape[0] - 250):
+                    farEndTemp = np.where(contoursAtBottom[0][:,0,0]>=(img.shape[1] - 50))[0]
                     if farEndTemp.size == 0:
-                        farEndTemp = np.where(contoursAtBottom[0][:,0,0] >= 100)[0]
+                        farEndTemp = np.where(contoursAtBottom[0][:,0,0] >= 50)[0]
                         if farEndTemp.size == 0:
                             print("far end not updated")
                         else:
@@ -121,18 +121,18 @@ def lineFollow():
                 #cv2.imshow('test', imgFinal)
                 xOffset = (centerOfLine / img.shape[1] - 0.5) * 15
                 if xOffset < 0:
-                    if xOffset < -4.5:
-                        xOffset = -4.5
+                    if xOffset < -5.5:
+                        xOffset = -5.5
                 else:
-                    if xOffset > 4.5:
-                        xOffset = 4.5
-                phiOffset = np.interp(-angle.mean(), (-np.pi, np.pi), (-9, 9))
+                    if xOffset > 5.5:
+                        xOffset = 5.5
+                phiOffset = np.interp(-angle.mean(), (-np.pi, np.pi), (-7, 7))
                 if phiOffset < 0:
-                    if phiOffset < -2:
-                        phiOffset = -2
+                    if phiOffset < -1.9:
+                        phiOffset = -1.9
                 else:
-                    if phiOffset > 2:
-                        phiOffset = 2
+                    if phiOffset > 1.9:
+                        phiOffset = 1.9
                 yOffset = 0
                 print('X: {0} Phi: {1}'.format(xOffset, phiOffset))
                 #if :
@@ -140,10 +140,10 @@ def lineFollow():
             else:
                 if farEnd > 0:
                     phiOffset = 1.9
-                    xOffset = -1.5
+                    xOffset = -1.8
                 else:
                     phiOffset = -1.9
-                    xOffset = 1.5
+                    xOffset = 1.8
                 print(farEnd)
         else:
             if farEnd > 0:
