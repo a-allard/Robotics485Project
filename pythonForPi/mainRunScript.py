@@ -96,10 +96,10 @@ def lineFollow():
                 # finding center of line in bottom of image:
                 centerOfLine = contoursAtBottom[0][contoursAtBottom[0][:,0,1]==(img.shape[0] - 1), 0, :][:,0].mean()
                 bottomCorners = np.where(contoursAtBottom[0][:,0,1]==(img.shape[0] - 1))[0].min(), np.where(contoursAtBottom[0][:,0,1]== (img.shape[0] - 1))[0].max()
-                if contoursAtBottom[0][:,0,1].min() < (img.shape[0] - 40):
-                    farEndTemp = np.where(contoursAtBottom[0][:,0,0]>=(img.shape[1] - 300))[0]
+                if contoursAtBottom[0][:,0,1].min() < (img.shape[0] - 80):
+                    farEndTemp = np.where(contoursAtBottom[0][:,0,0]>=(img.shape[1] - 200))[0]
                     if farEndTemp.size == 0:
-                        farEndTemp = np.where(contoursAtBottom[0][:,0,0] >= 300)[0]
+                        farEndTemp = np.where(contoursAtBottom[0][:,0,0] >= 200)[0]
                         if farEndTemp.size == 0:
                             print("far end not updated")
                             pass
@@ -129,12 +129,17 @@ def lineFollow():
                     if xOffset > 4.5:
                         xOffset = 4.5
                 phiOffset = np.interp(-angle.mean(), (-np.pi, np.pi), (-9, 9))
+                if phiOffset < 0:
+                    if phiOffset < -2:
+                        phiOffset = -2
+                else:
+                    if phiOffset > 2:
+                        phiOffset = 2
                 yOffset = 0
                 print('X: {0} Phi: {1}'.format(xOffset, phiOffset))
                 #if :
                  #   avoidObstacle()
             else:
-                xOffset = 0
                 if farEnd > 0:
                     phiOffset = 1.9
                     xOffset = -1.5
@@ -142,12 +147,7 @@ def lineFollow():
                     phiOffset = -1.9
                     xOffset = 1.5
                 print(farEnd)
-            if phiOffset < 0:
-                if phiOffset < -2:
-                    phiOffset = -2
-            else:
-                if phiOffset > 2:
-                    phiOffset = 2
+
         cv2.imshow('test', img)
         cv2.waitKey(1)
         x, y, phi = remote.getRemoteVectors()
