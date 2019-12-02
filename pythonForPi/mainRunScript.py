@@ -145,6 +145,15 @@ def lineFollow():
                     phiOffset = -1.9
                     xOffset = 1.5
                 print(farEnd)
+        else:
+            if farEnd > 0:
+                phiOffset = 1.9
+                xOffset = -1.5
+            else:
+                phiOffset = -1.9
+                xOffset = 1.5
+            print(farEnd)
+
 
         cv2.imshow('test', imgFinal)
         cv2.waitKey(2)
