@@ -92,7 +92,7 @@ def lineFollow():
         #imgContours = cv2.drawContours(obsticlesMarked, contoursAtBottom, -1, (0, 255, 0), 3)
         imgContours = cv2.drawContours(img, contoursAtBottom, -1, (0, 255, 0), 3)
         if len(contoursAtBottom) > 0:
-            if contoursAtBottom[0].min() < (img.shape[0] - 80):
+            if contoursAtBottom[0].min() < (img.shape[0] - 40):
                 # finding center of line in bottom of image:
                 centerOfLine = contoursAtBottom[0][contoursAtBottom[0][:,0,1]==(img.shape[0] - 1), 0, :][:,0].mean()
                 bottomCorners = np.where(contoursAtBottom[0][:,0,1]==(img.shape[0] - 1))[0].min(), np.where(contoursAtBottom[0][:,0,1]== (img.shape[0] - 1))[0].max()
@@ -121,7 +121,7 @@ def lineFollow():
                     angle = np.array([0, 0])
                     imgFinal = imgContours
                 cv2.imshow('test', imgFinal)
-                xOffset = (centerOfLine / img.shape[1] - 0.5) * 14
+                xOffset = (centerOfLine / img.shape[1] - 0.5) * 15
                 if xOffset < 0:
                     if xOffset < -4.5:
                         xOffset = -4.5
@@ -136,19 +136,19 @@ def lineFollow():
             else:
                 xOffset = 0
                 if farEnd > 0:
-                    phiOffset = 2.0
-                    xOffset = -1.4
+                    phiOffset = 1.9
+                    xOffset = -1.5
                 else:
-                    phiOffset = -2.0
-                    xOffset = 1.4
+                    phiOffset = -1.9
+                    xOffset = 1.5
                 print(farEnd)
-        cv2.imshow('test', img)
             if phiOffset < 0:
-                if phiOffset < -2.2:
-                    phiOffset = -2.2
+                if phiOffset < -2:
+                    phiOffset = -2
             else:
-                if phiOffset > 2.2:
-                    phiOffset = 2.2
+                if phiOffset > 2:
+                    phiOffset = 2
+        cv2.imshow('test', img)
         cv2.waitKey(1)
         x, y, phi = remote.getRemoteVectors()
         if abs(x) < 1:
