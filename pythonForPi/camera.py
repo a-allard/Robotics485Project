@@ -16,6 +16,7 @@ import pandas as pd
 from picamera import PiCamera
 from picamera.array import PiRGBArray
 from random import randint
+import gc
 
 
 
@@ -46,7 +47,7 @@ class RExEye(object):
             imageArray = self.__captureImage__()
         if not (self._lastRects is None):
             return (self._lastRects.copy(), self._lastPicks.copy())
-        
+
         imageArrayNew = imutils.resize(imageArray, width=min(parseWidth, imageArray.shape[1]))
         print("made it into function")
         (rects, widths) = self._hog.detectMultiScale(imageArrayNew, winStride=(12, 12),

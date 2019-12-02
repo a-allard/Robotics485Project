@@ -10,6 +10,7 @@ from camera import RExEye
 import time
 import numpy as np
 import cv2
+import gc
 
 
 def fullRemoteDrive():
@@ -175,7 +176,6 @@ def lineFollow():
             y += yOffset
         motors.sendMoveCommand(x, y, phi)
         print('X: {0:.2f} Phi: {1:.2f}...Actual: X: {2:.2f}, Y: {3:.2f}, PHI: {4:.2f}'.format(xOffset, phiOffset, x, y, phi))
-    time.sleep(1)
 
 def main():
     # go REx Go!
@@ -184,8 +184,12 @@ def main():
     while 1:
         if remote.getControllerMode() == 2:
             fullRemoteDrive()
+            time.sleep(1)
+            gc.collect()
         if remote.getControllerMode() == 1:
             lineFollow()
+            time.sleep(1)
+            gc.collect()
         else:
             img = cam.__captureImage__()
             unFilteredPeople, filteredPeople, peopleImg = cam.findPeople(img, True)
