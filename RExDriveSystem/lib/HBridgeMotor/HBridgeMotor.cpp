@@ -30,7 +30,7 @@ Motor::Motor(void) {
             this->measVel = measuredVelocity / 0.03; // wheel rotations per second.
             float diff = -(this->setVel - this->measVel);
             float newSpeed = speed;
-            newSpeed += diff * 1;
+            newSpeed += diff * 20;
             setPWM(toPWM(newSpeed));
         }
     }
