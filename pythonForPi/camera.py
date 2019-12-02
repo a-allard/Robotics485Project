@@ -26,7 +26,7 @@ class RExEye(object):
         self.favoritePersonLocation = None
         self._eyeCam = PiCamera()
         self._eyeCam.resolution = self._defaultRes
-        self._eyeCam.color_effects = (128, 128)
+        #self._eyeCam.color_effects = (128, 128)
         self._eyeCam.rotation = 180
         self._eyeCam.framerate = 30
         self._camImage = PiRGBArray(self._eyeCam)
@@ -48,11 +48,8 @@ class RExEye(object):
         if not (self._lastRects is None):
             return (self._lastRects.copy(), self._lastPicks.copy())
 
-        imageArrayNew = imutils.resize(imageArray, width=min(parseWidth, imageArray.shape[1]))
-        print("made it into function")
-        (rects, widths) = self._hog.detectMultiScale(imageArrayNew, winStride=(12, 12),
-                                                     padding=(15, 15), scale=1.09)
-        print("Using HOG")
+        imageArray = imutils.resize(imageArray, width=min(parseWidth, imageArray.shape[1]))
+        (rects, widths) = self._hog.detectMultiScale(imageArray, winStride=(4, 4),padding=(8, 8), scale=1.09)
         rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
         if useOverLap:
             pick = non_max_suppression(rects, probs=None, overlapThresh=0.5)
@@ -62,13 +59,13 @@ class RExEye(object):
         self._lastPicks = pick.copy()
         if drawOnImage:
             for (xA, yA, xB, yB) in pick:
-                cv2.rectangle(imageArrayNew, (xA, yA), (xB, yB), (0, 255, 0), 2)
-            return (rects, pick, imageArrayNew)
+                cv2.rectangle(imageArray, (xA, yA), (xB, yB), (0, 255, 0), 2)
+            return (rects, pick, imageArray)
         return (rects, pick)
 
     def findFavoritePerson(self, peopleArray):
         if not self.favoritePersonLocation:
-            if not peopleArray:
+            if peopleArray is None:
                 return -1
             if peopleArray.size == 0:
                 return -1
@@ -87,7 +84,15 @@ class RExEye(object):
         return(centerX, centerY)
 
 
-
+    def findObject(self, imageArray=None, drawOnImage=False, parseWidth=640):
+        if imageArray is None:
+            imageArray = self.__captureImage__()
+        imageArray = imutils.resize(imageArray, width=min(parseWidth, imageArray.shape[1]))
+        x = 0
+        if drawOnImage:
+            return x, imageArray
+        else:
+            return x
 
 
 

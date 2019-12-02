@@ -192,14 +192,16 @@ def main():
             gc.collect()
         else:
             img = cam.__captureImage__()
-            unFilteredPeople, filteredPeople, peopleImg = cam.findPeople(img, True)
-            print("found people")
-            x, y = cam.findFavoritePersonLocation(filteredPeople)
-            cv2.imshow('test', peopleImg)
+            #unFilteredPeople, filteredPeople, peopleImg = cam.findPeople(img, True)
+            #unFilteredPeople, filteredPeople, peopleImg = cam.findPeople(img, True, False, 250)
+            #x, y = cam.findFavoritePersonLocation(filteredPeople)
+            x, imgDrawn = cam.findObject(img, True)
+            cv2.imshow('test', imgDrawn)
             cv2.waitKey(1)
-            if not x == None:
+            if not x is None:
                 v,th,ph = remote.getRemoteVectors()
                 motors.sendMoveCommand(v, th, x * np.pi / 3)
+                print(x)
 
 
 
