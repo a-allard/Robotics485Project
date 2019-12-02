@@ -143,12 +143,12 @@ def lineFollow():
                     xOffset = 1.4
                 print(farEnd)
         cv2.imshow('test', img)
-        if phiOffset < 0:
-            if phiOffset < -2.2:
-                phiOffset = -2.2
-        else:
-            if phiOffset > 2.2:
-                phiOffset = 2.2
+            if phiOffset < 0:
+                if phiOffset < -2.2:
+                    phiOffset = -2.2
+            else:
+                if phiOffset > 2.2:
+                    phiOffset = 2.2
         cv2.waitKey(1)
         x, y, phi = remote.getRemoteVectors()
         if abs(x) < 1:
