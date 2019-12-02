@@ -56,6 +56,19 @@ def findObsticles(imgForObsticles, imgToDrawOn=None):
     return (maxs, mins, imgContours)
 
 
+def avoidObstacle():
+    x = 3
+    y = 3
+    motors.sendMoveCommand(0, 0, 0)
+    motors.sendMoveCommand(x, 0, 0)
+    time.sleep(1)
+    motors.sendMoveCommand(0, y, 0)
+    time.sleep(1)
+    motors.sendMoveCommand(-x, 0, 0)
+    time.sleep(1)
+    motors.sendMoveCommand(0, 0, 0)
+
+
 def lineFollow():
     xOffset = 0
     phiOffset = 0
@@ -85,7 +98,7 @@ def lineFollow():
                         print("far end not updated")
                         pass
                         #farEnd = np.where(contoursAtBottom[0][:,0,1]==(img.shape[0] - 1))[0].max() - img.shape[1] / 2
-                        
+
                     else:
                         farEnd = -1
                 else:
@@ -147,6 +160,8 @@ def lineFollow():
         else:
             y += yOffset
         motors.sendMoveCommand(x, y, phi)
+        if np.diff(contoursAtBottom[0][bottomCorners[0] - 100: bottomCorners[0]: 3, 0, 0]).max() > 2:
+            avoidObstacle()
         print('X: {0:.2f} Phi: {1:.2f}...Actual: X: {2:.2f}, Y: {3:.2f}, PHI: {4:.2f}'.format(xOffset, phiOffset, x, y, phi))
     time.sleep(1)
 
@@ -159,11 +174,11 @@ def main():
             fullRemoteDrive()
         if remote.getControllerMode() == 1:
             lineFollow()
-#        unFilteredPeople, filteredPeople = cam.findPeople()
- #       x,y = cam.findFavoritePersonLocation(filteredPeople)
-  #      if not x == None:
-   #         v,th,ph = remote.getRemoteVectors()
-    #        motors.sendMoveCommand(v, th, x * np.pi / 3)
+        unFilteredPeople, filteredPeople = cam.findPeople()
+        x,y = cam.findFavoritePersonLocation(filteredPeople)
+        if not x == None:
+            v,th,ph = remote.getRemoteVectors()
+            motors.sendMoveCommand(v, th, x * np.pi / 3)
 
 
 
