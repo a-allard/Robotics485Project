@@ -198,10 +198,11 @@ def main():
             img2 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
             img3 = cv2.morphologyEx(img2, cv2.MORPH_CLOSE, np.ones((1, 1), np.uint8))
-            ret, img3 = cv2.threshold(img3, 10, 40, cv2.THRESH_BINARY_INV)
-            im2, contours, hierarchy = cv2.findContours(img3, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-            contours = [c for c in contours if abs(c[:, 0, :].max(0) - c[:, 0, :].min(0)).min() > 10]
-            contours = [c for c in contours if abs(c[:, 0, :].max(0) - c[:, 0, :].min(0)).max() < 250]
+            # ret, img3 = cv2.threshold(img3, 10, 40, cv2.THRESH_BINARY_INV)
+            # im2, contours, hierarchy = cv2.findContours(img3, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+            # contours = [c for c in contours if abs(c[:, 0, :].max(0) - c[:, 0, :].min(0)).min() > 10]
+            # contours = [c for c in contours if abs(c[:, 0, :].max(0) - c[:, 0, :].min(0)).max() < 250]
+            z, contours = cam.findObject(img3, True, 1280)
             imgDrawn = cv2.drawContours(img, contours, -1, (0, 255, 0), 3)
             cv2.imshow('test', imgDrawn)
             cv2.waitKey(1)

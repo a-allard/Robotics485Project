@@ -33,6 +33,8 @@ class RExEye(object):
         self._hog = cv2.HOGDescriptor()
         self._hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
         self._lastRects = None
+        self.myColor = np.array([ 20.43477873, 80.35844065, 167.25861159])
+        self.threshHold = 0.81
         time.sleep(2)
 
 
@@ -88,9 +90,20 @@ class RExEye(object):
         if imageArray is None:
             imageArray = self.__captureImage__()
         imageArray = imutils.resize(imageArray, width=min(parseWidth, imageArray.shape[1]))
+        img = cv2.GaussianBlur(imageArray, (5, 5), 2)
+        newArray = img / self.myColor - 1
+        colorFul = np.abs(newArray).sum(2)
+
+        newImg = np.ones((img.shape[0], img.shape[1], 1), np.uint8)
+
+        newImg[colorFul > self.threshHold] = 0
+        newImg[colorFul < self.threshHold] = 255
+        im2, contours, hierarchy = cv2.findContours(newImg, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        contours = [c for c in contours if abs(c[:, 0, :].max(0) - c[:, 0, :].min(0)).max() < 250]
+
         x = 0
         if drawOnImage:
-            return x, imageArray
+            return x, contours
         else:
             return x
 
