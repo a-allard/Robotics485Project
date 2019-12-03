@@ -13,6 +13,7 @@ import cv2
 import gc
 
 
+
 def fullRemoteDrive():
     while remote.getControllerMode() == 2:
         x, y, phi = remote.getRemoteVectors()
@@ -195,9 +196,9 @@ def main():
             #unFilteredPeople, filteredPeople, peopleImg = cam.findPeople(img, True)
             #unFilteredPeople, filteredPeople, peopleImg = cam.findPeople(img, True, False, 250)
             #x, y = cam.findFavoritePersonLocation(filteredPeople)
-            img2 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            #img2 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-            img3 = cv2.morphologyEx(img2, cv2.MORPH_CLOSE, np.ones((1, 1), np.uint8))
+            img3 = cv2.morphologyEx(img, cv2.MORPH_CLOSE, np.ones((1, 1), np.uint8))
             # ret, img3 = cv2.threshold(img3, 10, 40, cv2.THRESH_BINARY_INV)
             # im2, contours, hierarchy = cv2.findContours(img3, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
             # contours = [c for c in contours if abs(c[:, 0, :].max(0) - c[:, 0, :].min(0)).min() > 10]
@@ -208,13 +209,23 @@ def main():
             cv2.waitKey(1)
             if len(contours) > 0:
                 m = cv2.moments(contours[0])
-                x = (m['m10'] / m['m00'] - (img.shape[1] - 1) / 2) / (img.shape[1] - 1)
+                x = (m['m10'] / (m['m00'] + 1e-5)) / (img.shape[1] - 1)
+                if x != 0:
+                    x -= 0.5
+                if abs(x) < 0.02:
+                    x=0
                 v,th,ph = remote.getRemoteVectors()
-                motors.sendMoveCommand(v, th, (x * np.pi / 2) + ph)
+                x *= -7
+                if abs(x) > 5:
+                    if x > 0:
+                        x=5
+                    else:
+                        x=-5
+                motors.sendMoveCommand(v/4, th/4, x + ph)
                 print(x)
             else:
                 v,th,ph = remote.getRemoteVectors()
-                motors.sendMoveCommand(v, th, ph)
+                motors.sendMoveCommand(v/4, th/4, x+ph)
 
 
 
