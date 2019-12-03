@@ -33,7 +33,8 @@ class RExEye(object):
         self._hog = cv2.HOGDescriptor()
         self._hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
         self._lastRects = None
-        self.myColor = np.array([ 20.43477873, 80.35844065, 167.25861159])
+        # self.myColor = np.array([ 20.43477873, 80.35844065, 167.25861159]) # orange pyrex lid
+        self.myColor = np.array([7.41503238, 93.41391767, 190.33350601]) # orange spikey ball from Dr Phillips
         self.threshHold = 0.81
         time.sleep(2)
 
