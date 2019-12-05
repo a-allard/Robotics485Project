@@ -16,21 +16,27 @@ import pandas as pd
 from picamera import PiCamera
 from picamera.array import PiRGBArray
 from random import randint
+import gc
 
 
 
 class RExEye(object):
     def __init__(self):
-        self._defaultRes = (640, 400)
+        self._defaultRes = (1280, 480)
         self.favoritePersonLocation = None
         self._eyeCam = PiCamera()
         self._eyeCam.resolution = self._defaultRes
-        self._eyeCam.color_effects = (128, 128)
+        #self._eyeCam.color_effects = (128, 128)
         self._eyeCam.rotation = 180
+        self._eyeCam.framerate = 30
         self._camImage = PiRGBArray(self._eyeCam)
         self._hog = cv2.HOGDescriptor()
         self._hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
         self._lastRects = None
+        # self.myColor = np.array([ 20.43477873, 80.35844065, 167.25861159]) # orange pyrex lid
+        # self.myColor = np.array([7.41503238, 93.41391767, 190.33350601]) # orange spikey ball from Dr Phillips
+        self.myColor = np.array([15.549, 97.9778, 226.54542]) # orange spikey ball from Dr Phillips
+        self.threshHold = 1.5
         time.sleep(2)
 
 
@@ -43,11 +49,11 @@ class RExEye(object):
     def findPeople(self, imageArray=None, drawOnImage=False, useOverLap=True, parseWidth=125):
         if imageArray is None:
             imageArray = self.__captureImage__()
-        if not self._lastRects is None:
+        if not (self._lastRects is None):
             return (self._lastRects.copy(), self._lastPicks.copy())
+
         imageArray = imutils.resize(imageArray, width=min(parseWidth, imageArray.shape[1]))
-        (rects, widths) = self._hog.detectMultiScale(imageArray, winStride=(12, 12),
-                                                     padding=(15, 15), scale=1.09)
+        (rects, widths) = self._hog.detectMultiScale(imageArray, winStride=(4, 4),padding=(8, 8), scale=1.09)
         rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
         if useOverLap:
             pick = non_max_suppression(rects, probs=None, overlapThresh=0.5)
@@ -63,7 +69,7 @@ class RExEye(object):
 
     def findFavoritePerson(self, peopleArray):
         if not self.favoritePersonLocation:
-            if not peopleArray:
+            if peopleArray is None:
                 return -1
             if peopleArray.size == 0:
                 return -1
@@ -82,7 +88,26 @@ class RExEye(object):
         return(centerX, centerY)
 
 
+    def findObject(self, imageArray=None, drawOnImage=False, parseWidth=640):
+        if imageArray is None:
+            imageArray = self.__captureImage__()
+        imageArray = imutils.resize(imageArray, width=min(parseWidth, imageArray.shape[1]))
+        img = cv2.GaussianBlur(imageArray, (5, 5), 2)
+        newArray = (img / self.myColor) - 1
+        colorFul = np.abs(newArray).sum(2)
 
+        newImg = np.ones((img.shape[0], img.shape[1], 1), np.uint8)
+
+        newImg[colorFul < self.threshHold] = 0
+        newImg[newImg != 0 ] = 255
+        im2, contours, hierarchy = cv2.findContours(newImg, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        contours = [c for c in contours if abs(c[:, 0, :].max(0) - c[:, 0, :].min(0)).max() < 250]
+
+        x = 0
+        if drawOnImage:
+            return x, contours
+        else:
+            return x
 
 
 

@@ -28,10 +28,13 @@ ret, binary = cv2.threshold(morphed, 80, 255, cv2.THRESH_BINARY_INV)
 
 im2, contours, hierarchy = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 
+contoursRefined = [c for c in contours if
+                           (c[:, 0, :].max(0) - c[:, 0, :].min(0)).min() >
+                           36]
 
 contoursAtBottom = [c for c in contours if c[:, 0, 1].max() == (img.shape[0] - 1)]
 
-imgContours = cv2.drawContours(img.copy(), contours, -1, (0, 255, 0), 3)
+imgContours = cv2.drawContours(img.copy(), contoursAtBottom, -1, (0, 255, 0), 2)
 cv2.imshow('binary', binary)
 
 
@@ -68,8 +71,8 @@ fftThres = cv2.threshold(np.uint8(data*4), 180, 255, cv2.THRESH_BINARY)[1]
 cv2.imshow('binaryFFT', fftThres)
 
 # %%
-cv2.imshow('veryBlurred', cv2.blur(img2, (35, 35)))
-diff = abs(np.diff(np.float64(cv2.blur(img2, (35, 35))), 1, 0))
+cv2.imshow('veryBlurred', cv2.blur(morphed, (35, 35)))
+diff = abs(np.diff(np.float64(cv2.blur(img2, (25, 25))), 1, 0))
 cv2.imshow('derivative', np.uint8(diff*75))
 difference = cv2.threshold(np.uint8(diff*75), 130, 255, cv2.THRESH_BINARY)[1]
 cv2.imshow('diffThresh', difference)
